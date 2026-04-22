@@ -107,6 +107,11 @@ chmod +x install.sh
 ```
 ./install.sh
 ```
+5. Je nach System musst du noch die folgende Zeile zu deiner rc hinzufügen (.bashrc / .zshrc ...)
+```bash 
+export PATH="$HOME/.local/bin:$PATH"
+```
+
 
 **Was das Installations-Skript macht:**
 1. Es erstellt eine isolierte Python-Umgebung (`venv`) unter `~/.local/share/noten-tools`.
