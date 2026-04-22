@@ -48,7 +48,7 @@ Die Skripte benötigen einige Systempakete, die du über deinen Paketmanager ins
 
 **Arch Linux / CachyOS / Manjaro:**
 ```bash
-sudo pacman -S fzf mupdf-tools qpdf ghostscript tesseract tesseract-data-deu tesseract-data-eng feh git
+sudo pacman -S fzf mupdf-tools qpdf ghostscript tesseract tesseract-data-deu tesseract-data-eng feh git python
 ```
 
 **Debian / Ubuntu / Mint:**
