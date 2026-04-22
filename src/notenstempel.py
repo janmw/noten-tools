@@ -5,7 +5,7 @@ import sys
 import subprocess
 import argparse
 
-# --- DYNAMISCHE KONFIGURATION (wie im Hauptskript) ---
+# --- DYNAMISCHE KONFIGURATION ---
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 LOGO_DATEI = os.path.join(SCRIPT_DIR, "logo.png")
 FONT_DATEI = os.path.join(SCRIPT_DIR, "00_stamp.ttf")
@@ -73,8 +73,18 @@ def main():
         try:
             ps = subprocess.Popen(['find', '.', '-maxdepth', '1', '-type', 'f', '-iname', '*.pdf'], stdout=subprocess.PIPE)
             # -m flag erlaubt Mehrfachauswahl mit TAB
-            result = subprocess.run(['fzf', '-m', '--prompt=Dateien wählen (TAB): '], stdin=ps.stdout, capture_output=True, text=True)
-            dateien = result.stdout.strip().split('\n')
+            # FIX: stdout=subprocess.PIPE anstelle von capture_output=True
+            result = subprocess.run(
+                ['fzf', '-m', '--prompt', 'Dateien wählen (TAB): '], 
+                stdin=ps.stdout, 
+                stdout=subprocess.PIPE, 
+                text=True
+            )
+            
+            if result.stdout.strip():
+                dateien = result.stdout.strip().split('\n')
+            else:
+                dateien = []
         except FileNotFoundError:
             print("Fehler: fzf nicht gefunden."); sys.exit(1)
 
