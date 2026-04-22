@@ -1,4 +1,4 @@
-#!/home/jan/.scripts/notenverarbeitung/.venv/bin/python
+#!/usr/bin/env python3
 import fitz  # PyMuPDF
 import pytesseract
 import re
@@ -13,8 +13,8 @@ import argparse     # Für die Terminal-Flags
 
 # --- DYNAMISCHE KONFIGURATION FÜR DOTFILES ---
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-LOGO_DATEI = os.path.join(SCRIPT_DIR, "logo.png")
-FONT_DATEI = os.path.join(SCRIPT_DIR, "00_stamp.ttf")
+LOGO_DATEI = os.path.join(SCRIPT_DIR, "../assets/logo.png")
+FONT_DATEI = os.path.join(SCRIPT_DIR, "../assets/00_stamp.ttf")
 
 A4_BREITE = 595.28
 A4_HOEHE = 841.89
@@ -185,13 +185,13 @@ def main():
     
     print("Bitte wähle die zu verarbeitende PDF-Datei aus...")
     try:
-        # Führt fzf über die Shell aus und fängt AUSSCHLIESSLICH das Ergebnis (stdout) ab, 
-        # damit fzf sein Menü ungestört im Terminal aufbauen kann.
-        fzf_cmd = 'find . -maxdepth 1 -type f -iname "*.pdf" | fzf'
-        result = subprocess.run(fzf_cmd, shell=True, stdout=subprocess.PIPE, text=True)
+        ps = subprocess.Popen(['find', '.', '-maxdepth', '1', '-type', 'f', '-iname', '*.pdf'], stdout=subprocess.PIPE)
+        # --- fzf mit sauberem UI aufgerufen ---
+        result = subprocess.run(['fzf', '--height=40%', '--layout=reverse', '--prompt=PDF wählen: '], stdin=ps.stdout, stdout=subprocess.PIPE, text=True)
+        ps.wait()
         
         selected_file = result.stdout.strip()
-                    
+        
         if selected_file:
             if selected_file.startswith("./"):
                 selected_file = selected_file[2:]
@@ -235,6 +235,7 @@ def main():
     for i in range(gesamt_seiten):
         print(f"Lese Seite {i+1}/{gesamt_seiten}...", end='\r')
         
+        # --- NEU: Native PyMuPDF Bild-Extraktion (ohne pdf2image) ---
         page = pdf_dokument[i]
         pix = page.get_pixmap(dpi=250, alpha=False)
         bild = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
@@ -313,12 +314,13 @@ def main():
                     if dummy_res and dummy_res["kategorie"] != "SAX_UNKLAR":
                         res_to_use = dummy_res
                     else:
+                        # --- NEU: Intelligente Kategorien-Erkennung ---
                         match = re.match(r'^(\d{2})\s+(.*)$', eingabe.strip())
                         if match:
-                            kat = match.group(1) 
+                            kat = match.group(1) # Nutzt deine eingegebene Zahl (z.B. '04')
                             basis = match.group(2)
                         else:
-                            kat = "" 
+                            kat = ""  # Keine störende 99 mehr!
                             basis = eingabe.strip()
                         res_to_use = {"kategorie": kat, "basis": basis, "nummer": "", "stimmung": ""}
             else:
@@ -370,6 +372,7 @@ def main():
         seiten = stimme["seiten"]
         
         name = f"{d['basis']} {d['nummer']}".strip() if d['nummer'] else d['basis']
+        # --- NEU: .strip() entfernt mögliche Leerzeichen, wenn 'kategorie' leer ist ---
         aktuelles_instrument = f"{d['kategorie']} {name}{d['stimmung']}".strip()
         
         basis_dateiname = f"{archiv_nr} - {titel} - {aktuelles_instrument}"
