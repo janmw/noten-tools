@@ -186,7 +186,6 @@ def main():
     print("Bitte wähle die zu verarbeitende PDF-Datei aus...")
     try:
         ps = subprocess.Popen(['find', '.', '-maxdepth', '1', '-type', 'f', '-iname', '*.pdf'], stdout=subprocess.PIPE)
-        # --- fzf mit sauberem UI aufgerufen ---
         result = subprocess.run(['fzf', '--height=40%', '--layout=reverse', '--prompt=PDF wählen: '], stdin=ps.stdout, stdout=subprocess.PIPE, text=True)
         ps.wait()
         
@@ -235,7 +234,6 @@ def main():
     for i in range(gesamt_seiten):
         print(f"Lese Seite {i+1}/{gesamt_seiten}...", end='\r')
         
-        # --- NEU: Native PyMuPDF Bild-Extraktion (ohne pdf2image) ---
         page = pdf_dokument[i]
         pix = page.get_pixmap(dpi=250, alpha=False)
         bild = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
@@ -302,10 +300,13 @@ def main():
 
             if manuell_abfragen:
                 print(f"\n[!] Seite {i+1}: Stimme unklar oder unvollständig.")
-                bild.thumbnail((800, 800)); bild.save("tmp.png")
-                proc = subprocess.Popen(["gwenview", "tmp.png"], stderr=subprocess.DEVNULL)
+                
+                # --- NEU: Plattformunabhängige Vorschau ohne temporäre Datei ---
+                vorschau = bild.copy()
+                vorschau.thumbnail((800, 800))
+                vorschau.show(title="Noten-Vorschau")
+                
                 eingabe = input("Stimme manuell (z.B. '04 Altsaxophon 1') [Enter für Deckblatt]: ")
-                proc.terminate()
                 
                 if eingabe.strip() == "":
                     res_to_use = {"kategorie": "00", "basis": "Deckblatt", "nummer": "", "stimmung": ""}
@@ -314,13 +315,12 @@ def main():
                     if dummy_res and dummy_res["kategorie"] != "SAX_UNKLAR":
                         res_to_use = dummy_res
                     else:
-                        # --- NEU: Intelligente Kategorien-Erkennung ---
                         match = re.match(r'^(\d{2})\s+(.*)$', eingabe.strip())
                         if match:
-                            kat = match.group(1) # Nutzt deine eingegebene Zahl (z.B. '04')
+                            kat = match.group(1) 
                             basis = match.group(2)
                         else:
-                            kat = ""  # Keine störende 99 mehr!
+                            kat = "" 
                             basis = eingabe.strip()
                         res_to_use = {"kategorie": kat, "basis": basis, "nummer": "", "stimmung": ""}
             else:
@@ -372,7 +372,6 @@ def main():
         seiten = stimme["seiten"]
         
         name = f"{d['basis']} {d['nummer']}".strip() if d['nummer'] else d['basis']
-        # --- NEU: .strip() entfernt mögliche Leerzeichen, wenn 'kategorie' leer ist ---
         aktuelles_instrument = f"{d['kategorie']} {name}{d['stimmung']}".strip()
         
         basis_dateiname = f"{archiv_nr} - {titel} - {aktuelles_instrument}"
@@ -409,7 +408,6 @@ def main():
         neues_pdf.save(dateipfad)
         print(f"-> Gespeichert: {finaler_dateiname}")
 
-    if os.path.exists("tmp.png"): os.remove("tmp.png")
     print("\nFertig! Alle Stimmen wurden sauber getrennt und benannt.")
 
 if __name__ == "__main__":
