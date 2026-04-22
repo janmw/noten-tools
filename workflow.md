@@ -53,7 +53,7 @@ Ich empfehle die folgende Dateistruktur. So ist gesichert, dass alle Stücke sau
 ### Register-Codes
 
 | Nr   | Register                                   |
-| ---- | ------------------------------------------ |
+| ---- | %----------------------------------------- |
 | 00   | Partitur, Direktion                        |
 | 01   | Flöten, Piccolo                            |
 | 02   | Oboe, Englischhorn, Fagott                 |
