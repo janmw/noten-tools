@@ -184,14 +184,14 @@ def main():
     print("=== Noten-Verarbeitung ===")
     
     print("Bitte wähle die zu verarbeitende PDF-Datei aus...")
-                    try:
-                        # Führt fzf über die Shell aus und fängt AUSSCHLIESSLICH das Ergebnis (stdout) ab, 
-                        # damit fzf sein Menü ungestört im Terminal aufbauen kann.
-                        fzf_cmd = 'find . -maxdepth 1 -type f -iname "*.pdf" | fzf'
-                        result = subprocess.run(fzf_cmd, shell=True, stdout=subprocess.PIPE, text=True)
-                        
-                        selected_file = result.stdout.strip()
-                                    
+    try:
+        # Führt fzf über die Shell aus und fängt AUSSCHLIESSLICH das Ergebnis (stdout) ab, 
+        # damit fzf sein Menü ungestört im Terminal aufbauen kann.
+        fzf_cmd = 'find . -maxdepth 1 -type f -iname "*.pdf" | fzf'
+        result = subprocess.run(fzf_cmd, shell=True, stdout=subprocess.PIPE, text=True)
+        
+        selected_file = result.stdout.strip()
+                    
         if selected_file:
             if selected_file.startswith("./"):
                 selected_file = selected_file[2:]
