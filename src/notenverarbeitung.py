@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
+#!/home/jan/.scripts/notenverarbeitung/.venv/bin/python
 import fitz  # PyMuPDF
 import pytesseract
-from pdf2image import convert_from_path
 import re
 import os
 import sys
@@ -14,8 +13,8 @@ import argparse     # Für die Terminal-Flags
 
 # --- DYNAMISCHE KONFIGURATION FÜR DOTFILES ---
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-LOGO_DATEI = os.path.join(SCRIPT_DIR, "../assets/logo.png")
-FONT_DATEI = os.path.join(SCRIPT_DIR, "../assets/00_stamp.ttf")
+LOGO_DATEI = os.path.join(SCRIPT_DIR, "logo.png")
+FONT_DATEI = os.path.join(SCRIPT_DIR, "00_stamp.ttf")
 
 A4_BREITE = 595.28
 A4_HOEHE = 841.89
@@ -100,7 +99,8 @@ def preprocess_for_ocr(pil_image):
     return Image.fromarray(binary_img)
 
 def erkenne_instrument(text_l, titel_woerter, full_header_text):
-    text_lower = text_l.lower().replace('\n', ' ')
+    kombi_text = text_l + " " + full_header_text
+    text_lower = kombi_text.lower().replace('\n', ' ')
     full_header_lower = full_header_text.lower().replace('\n', ' ')
     
     for w in titel_woerter:
@@ -173,12 +173,10 @@ def erkenne_instrument(text_l, titel_woerter, full_header_text):
     return {"kategorie": gefunden[0], "basis": basisname, "nummer": nummer, "stimmung": stimmung}
 
 def main():
-    # --- NEU: Kommandozeilen-Argumente definieren ---
     parser = argparse.ArgumentParser(description="Noten-Verarbeitung")
     parser.add_argument("--logo-runter", type=float, default=0, help="Verschiebt das Logo um X Punkte nach unten (z.B. 50)")
     parser.add_argument("--stempel-runter", type=float, default=0, help="Verschiebt den Text-Stempel um X Punkte nach unten (z.B. 50)")
     
-    # Lese die Parameter aus dem Terminal ein
     args = parser.parse_args()
     shift_logo = args.logo_runter
     shift_stamp = args.stempel_runter
@@ -188,7 +186,7 @@ def main():
     print("Bitte wähle die zu verarbeitende PDF-Datei aus...")
     try:
         ps = subprocess.Popen(['find', '.', '-maxdepth', '1', '-type', 'f', '-iname', '*.pdf'], stdout=subprocess.PIPE)
-        result = subprocess.run(['fzf', '--height=40%', '--layout=reverse', '--prompt=PDF wählen: '], stdin=ps.stdout, stdout=subprocess.PIPE, text=True)
+        result = subprocess.run(['fzf'], stdin=ps.stdout, capture_output=True, text=True)
         ps.wait()
         
         selected_file = result.stdout.strip()
@@ -223,7 +221,6 @@ def main():
 
     print(f"Verarbeite '{pdf_datei}'...")
     pdf_dokument = fitz.open(pdf_datei)
-    seiten_bilder = convert_from_path(pdf_datei, dpi=250)
 
     aktuelles_dict = None
     gesammelte_seiten = []
@@ -232,19 +229,23 @@ def main():
     instrument_counters = {}
     SUPER_KLEBER = ["Klavier", "Percussion", "Drumset", "Pauken"]
 
-    for i, bild in enumerate(seiten_bilder):
-        print(f"Lese Seite {i+1}/{len(seiten_bilder)}...", end='\r')
+    gesamt_seiten = len(pdf_dokument)
+
+    for i in range(gesamt_seiten):
+        print(f"Lese Seite {i+1}/{gesamt_seiten}...", end='\r')
+        
+        page = pdf_dokument[i]
+        pix = page.get_pixmap(dpi=250, alpha=False)
+        bild = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+
         w, h = bild.size
 
         crop_links = bild.crop((0, 0, w * 0.4, h * 0.2))
         crop_oben = bild.crop((0, 0, w, h * 0.25))
 
-        # --- BILD-AUFBEREITUNG (Optiker-Funktion) ---
         img_links = preprocess_for_ocr(crop_links)
         img_oben = preprocess_for_ocr(crop_oben)
 
-        # --- TEXTERKENNUNG MIT TUNNELBLICK (--psm 6) ---
-        # Zwingt Tesseract dazu, den Text als einen gleichmäßigen Block zu lesen
         text_l = pytesseract.image_to_string(img_links, lang='deu+eng', config='--psm 6')
         full_header = pytesseract.image_to_string(img_oben, lang='deu+eng', config='--psm 6')
         
@@ -278,6 +279,10 @@ def main():
                     neue_stimme_erkannt = True
                 elif res["stimmung"] != "" and res["stimmung"] != aktuelles_dict["stimmung"]:
                     neue_stimme_erkannt = True
+        else:
+            if ist_seite_eins or i == 0:
+                neue_stimme_erkannt = True
+                manuell_abfragen = True
 
         if neue_stimme_erkannt:
             if gesammelte_seiten:
@@ -293,29 +298,35 @@ def main():
                     })
                 gesammelte_seiten = []
 
-            if manuell_abfragen or (ist_seite_eins and not res):
+            if manuell_abfragen:
                 print(f"\n[!] Seite {i+1}: Stimme unklar oder unvollständig.")
                 bild.thumbnail((800, 800)); bild.save("tmp.png")
                 proc = subprocess.Popen(["gwenview", "tmp.png"], stderr=subprocess.DEVNULL)
-                eingabe = input("Stimme manuell (z.B. '04 Altsaxophon 1') [Enter für Überspringen]: ")
+                eingabe = input("Stimme manuell (z.B. '04 Altsaxophon 1') [Enter für Deckblatt]: ")
                 proc.terminate()
                 
-                # DIE REPARIERTE ABFRAGE OHNE EINRÜCKUNGS-FEHLER
                 if eingabe.strip() == "":
-                    res_to_use = {"kategorie": "99", "basis": "Unbekannt", "nummer": "", "stimmung": ""}
+                    res_to_use = {"kategorie": "00", "basis": "Deckblatt", "nummer": "", "stimmung": ""}
                 else:
                     dummy_res = erkenne_instrument(eingabe, [], eingabe)
                     if dummy_res and dummy_res["kategorie"] != "SAX_UNKLAR":
                         res_to_use = dummy_res
                     else:
-                        res_to_use = {"kategorie": "99", "basis": eingabe, "nummer": "", "stimmung": ""}
+                        match = re.match(r'^(\d{2})\s+(.*)$', eingabe.strip())
+                        if match:
+                            kat = match.group(1) 
+                            basis = match.group(2)
+                        else:
+                            kat = "" 
+                            basis = eingabe.strip()
+                        res_to_use = {"kategorie": kat, "basis": basis, "nummer": "", "stimmung": ""}
             else:
                 res_to_use = res.copy()
 
             basis = res_to_use["basis"]
             ocr_num = res_to_use["nummer"]
 
-            if basis not in SUPER_KLEBER and basis != "SAX_UNKLAR" and basis != "" and basis != "Deckblatt" and basis != "Unbekannt":
+            if basis not in SUPER_KLEBER and basis != "SAX_UNKLAR" and basis != "" and basis != "Deckblatt":
                 if basis not in instrument_counters:
                     instrument_counters[basis] = 0
 
@@ -358,7 +369,7 @@ def main():
         seiten = stimme["seiten"]
         
         name = f"{d['basis']} {d['nummer']}".strip() if d['nummer'] else d['basis']
-        aktuelles_instrument = f"{d['kategorie']} {name}{d['stimmung']}"
+        aktuelles_instrument = f"{d['kategorie']} {name}{d['stimmung']}".strip()
         
         basis_dateiname = f"{archiv_nr} - {titel} - {aktuelles_instrument}"
         dateipfad = os.path.join(ausgabe_ordner, f"{basis_dateiname}.pdf")
@@ -386,7 +397,6 @@ def main():
                 if os.path.exists(FONT_DATEI):
                     neue_seite.insert_font(fontname="jb", fontfile=FONT_DATEI); fnt="jb"
                 
-                # --- Y-Koordinaten um shift_stamp bzw. shift_logo erhöht ---
                 neue_seite.insert_text(fitz.Point(A4_BREITE - 120, 40 + shift_stamp), f"Nr. {archiv_nr}", color=(1,0,0), fontsize=24, fontname=fnt)
                 
                 if os.path.exists(LOGO_DATEI):
