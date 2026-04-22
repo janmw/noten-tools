@@ -11,6 +11,7 @@ Eine Sammlung leistungsstarker Kommandozeilen-Skripte (Python & Shell) zur autom
 - [💻 Nutzung](#-nutzung)
 - [⚡ Vorgeschlagener Workflow](./workflow.md)
 
+<br>
 ---
 
 ## ❓ Was machen die Skripte?
@@ -39,6 +40,7 @@ Die Speicherung erfolgt in einem automatisch erstellten Unterordner: `[Archivnum
 * Römische Zahlen (z. B. III statt 3) sind für die Texterkennung oft schwer zu differenzieren.
 * Schlagwerk wird grob in "Drumset", "Pauken" & "Percussion" unterteilt – hier ist oft manuelles Nachsortieren gefragt.
 
+<br>
 ---
 
 ## 🚀 Installation & Setup
@@ -57,11 +59,24 @@ sudo apt install fzf mupdf-tools qpdf ghostscript tesseract-ocr tesseract-ocr-de
 ```
 
 ### Installation durchführen
-1. **Repository klonen:** `git clone https://github.com/janmw/noten-tools`
-2. **Ordner wechseln:** `cd noten-tools`
-3. **Rechte vergeben:** `chmod +x install.sh`
-4. **Skript ausführen:** `./install.sh`
-5. **Pfad anpassen:** Je nach System musst du `export PATH="$HOME/.local/bin:$PATH"` zu deiner Shell-Konfiguration (`.bashrc` / `.zshrc`) hinzufügen.
+1. **Repository klonen:** 
+```bash
+git clone https://github.com/janmw/noten-tools
+```
+2. **Ordner wechseln:** 
+```
+cd noten-tools
+```
+3. **Rechte vergeben:** 
+```
+chmod +x install.sh
+```
+4. **Skript ausführen:** 
+```
+./install.sh
+```
+5. **Pfad anpassen:** 
+Je nach System musst du `export PATH="$HOME/.local/bin:$PATH"` zu deiner Shell-Konfiguration (`.bashrc` / `.zshrc`) hinzufügen.
 
 **Was passiert im Hintergrund?**
 Das Installations-Skript erstellt eine isolierte Python-Umgebung (`venv`) unter `~/.local/share/noten-tools` und installiert alle Abhängigkeiten, ohne dein System-Python zu berühren. Zudem werden globale Wrapper-Skripte in `~/.local/bin` erstellt. Danach können die Tools (`notenverarbeitung`, `notenstempel`, `unbooklet`, `pdf-fix`) aus jedem Ordner heraus aufgerufen werden.
@@ -70,6 +85,7 @@ Das Installations-Skript erstellt eine isolierte Python-Umgebung (`venv`) unter 
 * Lege dein eigenes `logo.png` in den Ordner `src/`, bevor du das Installations-Skript ausführst, um einen individuellen Stempel zu nutzen.
 * Die Schriftart für den Stempel (`00_stamp.ttf`) kann ebenfalls im Ordner `src/` ausgetauscht werden.
 
+<br>
 ---
 
 ## 💻 Nutzung
