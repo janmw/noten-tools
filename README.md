@@ -82,7 +82,8 @@ sudo pacman -S fzf mupdf-tools qpdf ghostscript tesseract tesseract-data-deu tes
 
 **Debian / Ubuntu / Mint:**
 ```bash
-sudo apt install fzf mupdf-tools qpdf ghostscript tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng feh git
+sudo apt install fzf mupdf-tools qpdf ghostscript tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng feh git python3.12-venv
+
 ```
 
 <br>
@@ -90,12 +91,20 @@ sudo apt install fzf mupdf-tools qpdf ghostscript tesseract-ocr tesseract-ocr-de
 
 ### Installation
 
-Klone das Repository und führe das Installations-Skript aus:
-
+1. Klone das Repository:
 ```bash
 git clone https://github.com/janmw/noten-tools
+```
+2. Wechsle in den Ordner:
+```bash 
 cd noten-tools
+```
+3. Mache das Installations-Skript ausführbar:
+```bash
 chmod +x install.sh
+'''
+4. Und führe es aus: 
+```
 ./install.sh
 ```
 
