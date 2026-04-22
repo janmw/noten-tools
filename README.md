@@ -102,7 +102,7 @@ cd noten-tools
 3. Mache das Installations-Skript ausführbar:
 ```bash
 chmod +x install.sh
-'''
+```
 4. Und führe es aus: 
 ```
 ./install.sh
