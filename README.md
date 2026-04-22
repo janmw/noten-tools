@@ -77,12 +77,12 @@ Diese Tools benötigen folgende Systempakete, die du über deinen Paketmanager i
 
 **Arch Linux / CachyOS / Manjaro:**
 ```bash
-sudo pacman -S fzf mupdf-tools qpdf ghostscript tesseract tesseract-data-deu tesseract-data-eng feh
+sudo pacman -S fzf mupdf-tools qpdf ghostscript tesseract tesseract-data-deu tesseract-data-eng feh git
 ```
 
 **Debian / Ubuntu / Mint:**
 ```bash
-sudo apt install fzf mupdf-tools qpdf ghostscript tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng feh
+sudo apt install fzf mupdf-tools qpdf ghostscript tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng feh git
 ```
 
 <br>
@@ -93,7 +93,7 @@ sudo apt install fzf mupdf-tools qpdf ghostscript tesseract-ocr tesseract-ocr-de
 Klone das Repository und führe das Installations-Skript aus:
 
 ```bash
-git clone https://github.com/DEIN_NAME/noten-tools.git
+git clone https://github.com/janmw/noten-tools
 cd noten-tools
 chmod +x install.sh
 ./install.sh
