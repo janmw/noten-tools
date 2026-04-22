@@ -322,9 +322,9 @@ def main():
                             # Schließt den Bildbetrachter nach der Eingabe wieder
                             proc.terminate()
                             
-                if eingabe.strip() == "":
+            if eingabe.strip() == "":
                     res_to_use = {"kategorie": "00", "basis": "Deckblatt", "nummer": "", "stimmung": ""}
-                else:
+            else:
                     dummy_res = erkenne_instrument(eingabe, [], eingabe)
                     if dummy_res and dummy_res["kategorie"] != "SAX_UNKLAR":
                         res_to_use = dummy_res
