@@ -32,7 +32,7 @@ Die Benennung der generierten Dateien folgt einer festen Nomenklatur (ausgericht
 `[Archivnummer] - [Titel] - [Register-Code] [Instrument] [Stimme].pdf`
 **Beispiel:** `1368 - ABBA Gold - 05 F-Horn 1.pdf`
 
-Die Speicherung erfolgt in einem automatisch erstellten Unterordner: `[Archivnummer] - [Titel]`
+Die Speicherung erfolgt in einem automatisch erstellten Unterordner: `[Archivnummer] - [Titel]` <br>
 *[Mehr zu Nomenklatur und Registercodes findest du im Workflow-Guide.](./workflow.md#-Nomenklatur)*
 
 **Hinweise & Einschränkungen zur Texterkennung (OCR):**
