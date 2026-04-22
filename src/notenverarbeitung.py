@@ -5,6 +5,7 @@ import re
 import os
 import sys
 import subprocess
+import shutil       # NEU: Für die Suche nach dem Bildbetrachter
 import difflib
 import cv2          # OpenCV für professionelle Bildbearbeitung
 import numpy as np  # Numpy für OpenCV-Matrizen
@@ -301,12 +302,29 @@ def main():
             if manuell_abfragen:
                 print(f"\n[!] Seite {i+1}: Stimme unklar oder unvollständig.")
                 
-                # --- NEU: Plattformunabhängige Vorschau ohne temporäre Datei ---
-                vorschau = bild.copy()
-                vorschau.thumbnail((800, 800))
-                vorschau.show(title="Noten-Vorschau")
+                # --- NEU: Smarte Vorschau, die sich wieder schließt ---
+                bild.thumbnail((800, 800))
+                bild.save("tmp.png")
                 
+                # Sucht nach gängigen Linux-Bildbetrachtern (Mint, Ubuntu, KDE, XFCE)
+                betrachter = None
+                for v in ["xviewer", "eog", "gwenview", "ristretto", "display"]:
+                    if shutil.which(v):
+                        betrachter = v
+                        break
+                
+                proc = None
+                if betrachter:
+                    proc = subprocess.Popen([betrachter, "tmp.png"], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+                else:
+                    # Fallback, falls absolut kein Betrachter gefunden wird
+                    bild.copy().show(title="Noten-Vorschau")
+
                 eingabe = input("Stimme manuell (z.B. '04 Altsaxophon 1') [Enter für Deckblatt]: ")
+                
+                # Schließt das Fenster sofort nach dem Drücken von Enter!
+                if proc:
+                    proc.terminate()
                 
                 if eingabe.strip() == "":
                     res_to_use = {"kategorie": "00", "basis": "Deckblatt", "nummer": "", "stimmung": ""}
@@ -408,6 +426,8 @@ def main():
         neues_pdf.save(dateipfad)
         print(f"-> Gespeichert: {finaler_dateiname}")
 
+    # Räumt das kleine Vorschaubild am Ende wieder auf
+    if os.path.exists("tmp.png"): os.remove("tmp.png")
     print("\nFertig! Alle Stimmen wurden sauber getrennt und benannt.")
 
 if __name__ == "__main__":
