@@ -12,6 +12,7 @@ Eine Sammlung leistungsstarker Kommandozeilen-Skripte (Python & Shell) zur autom
 - [⚡ Vorgeschlagener Workflow](./workflow.md)
 
 <br>
+
 ---
 
 ## ❓ Was machen die Skripte?
@@ -41,6 +42,7 @@ Die Speicherung erfolgt in einem automatisch erstellten Unterordner: `[Archivnum
 * Schlagwerk wird grob in "Drumset", "Pauken" & "Percussion" unterteilt – hier ist oft manuelles Nachsortieren gefragt.
 
 <br>
+
 ---
 
 ## 🚀 Installation & Setup
@@ -86,6 +88,7 @@ Das Installations-Skript erstellt eine isolierte Python-Umgebung (`venv`) unter 
 * Die Schriftart für den Stempel (`00_stamp.ttf`) kann ebenfalls im Ordner `src/` ausgetauscht werden.
 
 <br>
+
 ---
 
 ## 💻 Nutzung
