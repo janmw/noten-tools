@@ -22,18 +22,17 @@ for cmd in fzf mutool qpdf gs tesseract; do
 done
 
 if [ -n "$MISSING_PKGS" ]; then
-    echo "⚠️ Warnung: Folgende System-Pakete fehlen und müssen über deinen Paketmanager installiert werden:"
+    echo "⚠️ Warnung: Folgende System-Pakete fehlen eventuell:"
     echo -e "${GREEN}$MISSING_PKGS${NC}"
-    echo "Beispiel (Debian/Ubuntu): sudo apt install fzf mupdf-tools qpdf ghostscript tesseract-ocr tesseract-ocr-deu"
-    echo "Beispiel (Arch/CachyOS):  sudo pacman -S fzf mupdf-tools qpdf ghostscript tesseract tesseract-data-deu"
-    read -p "Trotzdem mit der Installation fortfahren? (j/n) " -n 1 -r
+    echo "Stelle sicher, dass Tesseract (inkl. deu/eng) und Ghostscript installiert sind."
+    read -p "Trotzdem fortfahren? (j/n) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Jj]$ ]]; then
         exit 1
     fi
 fi
 
-# 2. Verzeichnisse anlegen
+# 2. Verzeichnisse anlegen und Dateien kopieren
 mkdir -p "$INSTALL_DIR"
 mkdir -p "$BIN_DIR"
 cp -r src/* "$INSTALL_DIR/"
@@ -42,7 +41,12 @@ cp -r src/* "$INSTALL_DIR/"
 echo -e "\n${BLUE}Erstelle Python Virtual Environment...${NC}"
 python3 -m venv "$INSTALL_DIR/.venv"
 "$INSTALL_DIR/.venv/bin/pip" install --upgrade pip
-"$INSTALL_DIR/.venv/bin/pip" install -r requirements.txt
+if [ -f "requirements.txt" ]; then
+    "$INSTALL_DIR/.venv/bin/pip" install -r requirements.txt
+else
+    # Fallback falls keine requirements.txt da ist
+    "$INSTALL_DIR/.venv/bin/pip" install PyMuPDF pytesseract opencv-python numpy Pillow
+fi
 
 # 4. Wrapper Skripte in ~/.local/bin erstellen
 echo -e "\n${BLUE}Erstelle globale Befehle...${NC}"
@@ -65,15 +69,14 @@ create_wrapper() {
     echo " -> $cmd_name installiert"
 }
 
+# Python-Tools
 create_wrapper "notenstempel" "notenstempel.py" true
 create_wrapper "notenverarbeitung" "notenverarbeitung.py" true
+
+# Shell-Tools
 create_wrapper "unbooklet" "unbooklet.sh" false
 create_wrapper "pdf-fix" "pdf-fix.sh" false
+create_wrapper "stempel-finalisieren" "stempel-finalisieren.sh" false
 
 echo -e "\n${GREEN}✅ Installation erfolgreich!${NC}"
-echo "Stelle sicher, dass $BIN_DIR in deinem \$PATH ist (Standard bei den meisten Linux-Distributionen)."
-echo "Du kannst die Tools nun aus jedem Ordner in deiner Shell aufrufen mit:"
-echo " - notenstempel"
-echo " - notenverarbeitung"
-echo " - unbooklet"
-echo " - pdf-fix"
+echo "Du kannst die Tools nun global verwenden."

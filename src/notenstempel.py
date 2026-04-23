@@ -10,22 +10,19 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 LOGO_DATEI = os.path.join(SCRIPT_DIR, "logo.png")
 FONT_DATEI = os.path.join(SCRIPT_DIR, "00_stamp.ttf")
 
-A4_BREITE = 595.28
-A4_HOEHE = 841.89
-
-def stempel_datei(input_pfad, archiv_nr, shift_logo, shift_stamp):
+def stempel_datei(input_pfad, archiv_nr, shift_logo, shift_stamp, h_shift, ziel_breite, ziel_hoehe):
     doc = fitz.open(input_pfad)
     output_pfad = input_pfad.replace(".pdf", "_gestempelt.pdf")
     new_doc = fitz.open()
 
     for i in range(len(doc)):
         src_page = doc[i]
-        page = new_doc.new_page(width=A4_BREITE, height=A4_HOEHE)
+        page = new_doc.new_page(width=ziel_breite, height=ziel_hoehe)
         
-        # Skalieren auf A4
-        ratio = min(A4_BREITE / src_page.rect.width, A4_HOEHE / src_page.rect.height)
+        # Skalieren auf Zielformat
+        ratio = min(ziel_breite / src_page.rect.width, ziel_hoehe / src_page.rect.height)
         rect = fitz.Rect(0, 0, src_page.rect.width * ratio, src_page.rect.height * ratio)
-        rect.x1 = (A4_BREITE + rect.width) / 2
+        rect.x1 = (ziel_breite + rect.width) / 2
         rect.x0 = rect.x1 - rect.width 
         page.show_pdf_page(rect, doc, i)
 
@@ -38,15 +35,15 @@ def stempel_datei(input_pfad, archiv_nr, shift_logo, shift_stamp):
             
             # Archiv-Nummer stempeln
             page.insert_text(
-                fitz.Point(A4_BREITE - 120, 40 + shift_stamp), 
+                fitz.Point(ziel_breite - 120, 40 + shift_stamp), 
                 f"Nr. {archiv_nr}", 
                 color=(1,0,0), fontsize=24, fontname=fnt
             )
             
-            # Logo stempeln
+            # Logo stempeln mit horizontalem Shift
             if os.path.exists(LOGO_DATEI):
                 page.insert_image(
-                    fitz.Rect(20, 0 + shift_logo, 100, 60 + shift_logo), 
+                    fitz.Rect(20 + h_shift, 0 + shift_logo, 100 + h_shift, 60 + shift_logo), 
                     filename=LOGO_DATEI
                 )
 
@@ -54,10 +51,23 @@ def stempel_datei(input_pfad, archiv_nr, shift_logo, shift_stamp):
     print(f"   -> Erstellt: {os.path.basename(output_pfad)}")
 
 def main():
-    parser = argparse.ArgumentParser(description="PDFs auf A4 bringen und stempeln.")
+    parser = argparse.ArgumentParser(description="PDFs formatieren und stempeln.")
     parser.add_argument("--logo-runter", type=float, default=0)
     parser.add_argument("--stempel-runter", type=float, default=0)
+    parser.add_argument("--logo-rechts", type=float, default=0)
+    parser.add_argument("--logo-links", type=float, default=0)
+    parser.add_argument("--a5", action="store_true", help="Auf A5 statt A4 skalieren")
+    parser.add_argument("--quer", action="store_true", help="Querformat (Landscape) nutzen")
     args = parser.parse_args()
+
+    h_shift = args.logo_rechts - args.logo_links
+
+    # Format-Berechnung
+    ziel_breite = 420.94 if args.a5 else 595.28
+    ziel_hoehe = 595.28 if args.a5 else 841.89
+
+    if args.quer:
+        ziel_breite, ziel_hoehe = ziel_hoehe, ziel_breite
 
     print("=== Notenstempler ===")
     
@@ -72,8 +82,6 @@ def main():
     else:
         try:
             ps = subprocess.Popen(['find', '.', '-maxdepth', '1', '-type', 'f', '-iname', '*.pdf'], stdout=subprocess.PIPE)
-            # -m flag erlaubt Mehrfachauswahl mit TAB
-            # FIX: stdout=subprocess.PIPE anstelle von capture_output=True
             result = subprocess.run(
                 ['fzf', '-m', '--prompt', 'Dateien wählen (TAB): '], 
                 stdin=ps.stdout, 
@@ -96,7 +104,7 @@ def main():
     print(f"\nVerarbeite {len(dateien)} Dateien...")
     for f in dateien:
         if f.startswith("./"): f = f[2:]
-        stempel_datei(f, archiv_nr, args.logo_runter, args.stempel_runter)
+        stempel_datei(f, archiv_nr, args.logo_runter, args.stempel_runter, h_shift, ziel_breite, ziel_hoehe)
 
     print("\nFertig!")
 
