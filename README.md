@@ -63,6 +63,47 @@ noten-verarbeitung [PDF] [Flags]
 | 10 | Schlagwerk |
 | 11 | Streicher und Sonstiges |
 
+### `noten-pdf-fix`
+
+Reparatur- und Aufräum-Werkzeug für einzelne oder mehrere PDFs. Operationen lassen sich kombinieren und werden in fester Reihenfolge angewendet: **Decrypt → Repair → No-Rotate → Compress**.
+
+```
+noten-pdf-fix [DATEI ...] [Flags]
+```
+
+Ohne Datei-Argumente öffnet sich `fzf` mit Mehrfachauswahl (TAB markiert, ENTER startet). Wird keine Operation gewählt, wird `--no-rotate` als Default ausgeführt (entspricht dem Verhalten des alten `pdf-fix.sh`).
+
+**Operationen**
+
+| Flag | Wirkung |
+|---|---|
+| `--decrypt` | Passwortgeschütztes PDF entschlüsseln (Passwort wird interaktiv abgefragt) |
+| `--repair` | PDF neu serialisieren — heilt kleinere Strukturfehler |
+| `--no-rotate` | `AutoRotatePages=/None` setzen, damit Viewer die Seiten nicht eigenmächtig drehen |
+| `--compress` | Mit Ghostscript komprimieren |
+| `--compress-level {screen,ebook,printer,prepress}` | Qualität beim Komprimieren (Default `printer`) |
+
+**Backup / Ausgabe**
+
+| Flag | Wirkung |
+|---|---|
+| _Default_ | Legt `<datei>.pdf.bak` neben dem Original an und überschreibt das Original mit dem Ergebnis |
+| `--no-backup` | Kein Backup, Original wird direkt überschrieben |
+| `--out PATH` | Schreibt das Ergebnis nach PATH, Original bleibt unangetastet (nur bei einer Eingabedatei) |
+
+Beispiele:
+
+```bash
+# fzf-Multiauswahl, Default = no-rotate, mit .bak-Backup
+noten-pdf-fix
+
+# Mehrere Dateien, repair + komprimieren mit "ebook"-Preset
+noten-pdf-fix scan1.pdf scan2.pdf --repair --compress --compress-level ebook
+
+# Verschlüsseltes PDF entschlüsseln und Ergebnis getrennt ablegen
+noten-pdf-fix geschuetzt.pdf --decrypt --out entsperrt.pdf
+```
+
 ### `noten-tools-aliases`
 
 Verwaltung der gelernten Aliase aus interaktiven Sitzungen:
@@ -85,16 +126,16 @@ cd noten-tools
 ./install.sh
 ```
 
-`install.sh` erkennt automatisch die Distribution (Arch/CachyOS, Debian/Ubuntu, Fedora, macOS) und installiert die System-Abhängigkeiten (`tesseract` mit `deu`+`eng`-Sprachdaten, `poppler-utils`, `fzf`, `xdg-utils`) sowie das Python-Paket via `pipx`.
+`install.sh` erkennt automatisch die Distribution (Arch/CachyOS, Debian/Ubuntu, Fedora, macOS) und installiert die System-Abhängigkeiten (`tesseract` mit `deu`+`eng`-Sprachdaten, `poppler-utils`, `fzf`, `xdg-utils`, `ghostscript`) sowie das Python-Paket via `pipx`.
 
 ### Manuell
 
 System-Pakete:
 
-* **Arch / CachyOS**: `pacman -S tesseract tesseract-data-deu tesseract-data-eng poppler fzf xdg-utils python-pipx`
-* **Ubuntu / Debian**: `apt-get install tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng poppler-utils fzf xdg-utils pipx`
-* **Fedora**: `dnf install tesseract tesseract-langpack-deu tesseract-langpack-eng poppler-utils fzf xdg-utils pipx`
-* **macOS** (Homebrew): `brew install tesseract tesseract-lang poppler fzf pipx`
+* **Arch / CachyOS**: `pacman -S tesseract tesseract-data-deu tesseract-data-eng poppler fzf xdg-utils ghostscript python-pipx`
+* **Ubuntu / Debian**: `apt-get install tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng poppler-utils fzf xdg-utils ghostscript pipx`
+* **Fedora**: `dnf install tesseract tesseract-langpack-deu tesseract-langpack-eng poppler-utils fzf xdg-utils ghostscript pipx`
+* **macOS** (Homebrew): `brew install tesseract tesseract-lang poppler fzf ghostscript pipx`
 
 Python-Paket:
 
@@ -131,6 +172,7 @@ noten-tools/
 ├── notentools/
 │   ├── shared/        # geteilte Bibliothek (config, logging, instruments, pdf_io, stamp, paths)
 │   ├── verarbeitung/  # noten-verarbeitung CLI
+│   ├── pdf_fix/       # noten-pdf-fix CLI
 │   └── aliases/       # noten-tools-aliases CLI
 ├── data/instruments.yaml
 ├── assets/{logo.png, 00_stamp.ttf}
@@ -142,7 +184,6 @@ noten-tools/
 ## Geplante weitere Befehle
 
 * `noten-stempel` — eigenständiger Stempel-Befehl ohne Splitting
-* `noten-fix` — PDF-Bereinigung
 * `noten-unbooklet` — Booklet-Layout auflösen
 
 ## Entwicklung

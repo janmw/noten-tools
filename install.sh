@@ -35,7 +35,7 @@ install_packages_arch() {
     info "Arch/CachyOS erkannt — installiere via pacman"
     sudo pacman -S --needed --noconfirm \
         tesseract tesseract-data-deu tesseract-data-eng \
-        poppler fzf xdg-utils python-pipx
+        poppler fzf xdg-utils ghostscript python-pipx
 }
 
 install_packages_debian() {
@@ -43,14 +43,14 @@ install_packages_debian() {
     sudo apt-get update
     sudo apt-get install -y \
         tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng \
-        poppler-utils fzf xdg-utils pipx
+        poppler-utils fzf xdg-utils ghostscript pipx
 }
 
 install_packages_fedora() {
     info "Fedora erkannt — installiere via dnf"
     sudo dnf install -y \
         tesseract tesseract-langpack-deu tesseract-langpack-eng \
-        poppler-utils fzf xdg-utils pipx
+        poppler-utils fzf xdg-utils ghostscript pipx
 }
 
 install_packages_macos() {
@@ -58,7 +58,7 @@ install_packages_macos() {
     if ! command -v brew >/dev/null 2>&1; then
         fail "Homebrew nicht installiert (https://brew.sh)"
     fi
-    brew install tesseract tesseract-lang poppler fzf pipx
+    brew install tesseract tesseract-lang poppler fzf ghostscript pipx
 }
 
 main() {
@@ -86,6 +86,7 @@ main() {
     echo
     echo "Verfügbare Befehle:"
     echo "  noten-verarbeitung       — Notensatz in Stimmen splitten"
+    echo "  noten-pdf-fix            — PDF reparieren / entschlüsseln / komprimieren / Auto-Rotate stoppen"
     echo "  noten-tools-aliases sync — Gelernte Aliase als Repo-Patch ausgeben"
     echo
     echo "Tipp: Falls die Befehle nicht gefunden werden, neue Shell öffnen oder"
