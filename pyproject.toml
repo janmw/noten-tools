@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "noten-tools"
+version = "0.1.0"
+description = "Werkzeuge für die digitale Notenarchiv-Verwaltung der Stadtkapelle"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Jan Westhäuser", email = "jan@westhaeuser.de" }]
+dependencies = [
+    "pikepdf>=9.0",
+    "pypdf>=5.0",
+    "pdf2image>=1.17",
+    "pytesseract>=0.3.10",
+    "Pillow>=10.0",
+    "reportlab>=4.0",
+    "PyYAML>=6.0",
+    "questionary>=2.0",
+    "rich>=13.0",
+    "platformdirs>=4.2",
+]
+
+[project.scripts]
+noten-verarbeitung = "notentools.verarbeitung.__main__:main"
+noten-tools-aliases = "notentools.aliases.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["notentools*"]
+
+[tool.setuptools.package-data]
+"notentools" = ["../data/*.yaml", "../assets/*"]
+
+[tool.setuptools]
+include-package-data = true

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.env
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Lokale Test-PDFs / Ausgaben
+/tmp_test/
+*.pdf
+!tests/fixtures/**/*.pdf

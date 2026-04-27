@@ -1,0 +1,428 @@
+# Instrumenten-Mapping für noten-tools
+#
+# Format:
+#   <code>:
+#     <normalname>:
+#       aliases: [liste, von, schreibweisen]
+#       keep_original_name: true|false   # optional, default false
+#                                        # (wenn true, wird der OCR-Originalname als Instrumentenname
+#                                        #  übernommen statt 'normalname' — z.B. für Schlagwerk)
+#
+# Codes:
+#   00 — Direktion / Partitur / Score
+#   01 — Flöten & Piccolo
+#   02 — Oboe, Fagott und andere Doppelrohrbläser
+#   03 — Klarinetten (alle Arten)
+#   04 — Saxophone (alle Arten)
+#   05 — Hörner
+#   06 — Trompeten, Flügelhörner, Kornette
+#   07 — Tenorhörner, Bariton, Euphonium
+#   08 — Posaunen
+#   09 — Tuben & Bässe
+#   10 — Schlagwerk
+#   11 — Streicher und Sonstiges
+
+"00":
+  Partitur:
+    aliases:
+      - partitur
+      - direktion
+      - direction
+      - dirigierstimme
+      - dirigentenstimme
+      - score
+      - conductor
+      - "conductor's score"
+      - conductor score
+      - full score
+      - condensed score
+      - klavierauszug
+      - piano conductor
+
+"01":
+  Piccolo:
+    aliases:
+      - piccolo
+      - piccoloflöte
+      - piccolo flute
+      - kleine flöte
+      - flauto piccolo
+      - octavin
+  Flöte:
+    aliases:
+      - flöte
+      - floete
+      - querflöte
+      - querfloete
+      - flute
+      - flauto
+      - c flute
+      - concert flute
+  Altflöte:
+    aliases:
+      - altflöte
+      - altfloete
+      - alto flute
+      - flauto alto
+  Bassflöte:
+    aliases:
+      - bassflöte
+      - bassfloete
+      - bass flute
+      - flauto basso
+
+"02":
+  Oboe:
+    aliases:
+      - oboe
+      - hoboe
+      - hautbois
+  Englischhorn:
+    aliases:
+      - englischhorn
+      - englisch horn
+      - english horn
+      - cor anglais
+      - corno inglese
+  Fagott:
+    aliases:
+      - fagott
+      - bassoon
+      - basson
+      - fagotto
+  Kontrafagott:
+    aliases:
+      - kontrafagott
+      - contrabassoon
+      - contra bassoon
+      - contrafagotto
+
+"03":
+  Es-Klarinette:
+    aliases:
+      - es-klarinette
+      - es klarinette
+      - eb clarinet
+      - eb-clarinet
+      - klarinette in es
+      - clarinet in eb
+      - kleine klarinette
+      - piccolo clarinet
+  Klarinette:
+    aliases:
+      - klarinette
+      - clarinet
+      - clarinetto
+      - clarinette
+      - b-klarinette
+      - b klarinette
+      - klarinette in b
+      - bb clarinet
+      - clarinet in bb
+      - clarinet in b
+  Altklarinette:
+    aliases:
+      - altklarinette
+      - alto clarinet
+      - clarinetto contralto
+  Bassklarinette:
+    aliases:
+      - bassklarinette
+      - bass clarinet
+      - clarinetto basso
+      - clarinette basse
+  Kontrabassklarinette:
+    aliases:
+      - kontrabassklarinette
+      - contrabass clarinet
+      - contra bass clarinet
+  Bassetthorn:
+    aliases:
+      - bassetthorn
+      - basset horn
+      - corno di bassetto
+
+"04":
+  Sopransaxophon:
+    aliases:
+      - sopransaxophon
+      - sopran-saxophon
+      - sopransax
+      - soprano saxophone
+      - soprano sax
+      - sax soprano
+  Altsaxophon:
+    aliases:
+      - altsaxophon
+      - alt-saxophon
+      - altsax
+      - alto saxophone
+      - alto sax
+      - sax alto
+      - es-altsaxophon
+      - eb alto saxophone
+  Tenorsaxophon:
+    aliases:
+      - tenorsaxophon
+      - tenor-saxophon
+      - tenorsax
+      - tenor saxophone
+      - tenor sax
+      - sax tenor
+      - b-tenorsaxophon
+      - bb tenor saxophone
+  Baritonsaxophon:
+    aliases:
+      - baritonsaxophon
+      - bariton-saxophon
+      - baritonsax
+      - baritone saxophone
+      - baritone sax
+      - sax baritone
+  Basssaxophon:
+    aliases:
+      - basssaxophon
+      - bass saxophone
+      - bass sax
+
+"05":
+  Horn:
+    aliases:
+      - horn
+      - waldhorn
+      - hörner
+      - french horn
+      - corno
+      - cor
+      - horn in f
+      - f horn
+      - horn in es
+      - horn in eb
+
+"06":
+  Trompete:
+    aliases:
+      - trompete
+      - trompeten
+      - trumpet
+      - tromba
+      - trompette
+      - bb trumpet
+      - trumpet in bb
+      - trumpet in b
+      - b-trompete
+      - c trumpet
+      - trumpet in c
+      - c-trompete
+      - es-trompete
+      - eb trumpet
+  Flügelhorn:
+    aliases:
+      - flügelhorn
+      - fluegelhorn
+      - flugelhorn
+      - flicorno
+      - bugle
+      - flügelhörner
+  Kornett:
+    aliases:
+      - kornett
+      - cornet
+      - cornetto
+      - cornett
+      - bb cornet
+
+"07":
+  Tenorhorn:
+    aliases:
+      - tenorhorn
+      - tenor horn
+      - althorn
+      - alto horn
+      - es-althorn
+      - eb tenor horn
+  Bariton:
+    aliases:
+      - bariton
+      - baritone
+      - baritone horn
+      - bariton horn
+      - barytone
+  Euphonium:
+    aliases:
+      - euphonium
+      - eufonium
+      - euph
+      - bombardino
+
+"08":
+  Posaune:
+    aliases:
+      - posaune
+      - posaunen
+      - trombone
+      - trombon
+      - trombone tenor
+      - tenor trombone
+      - tenorposaune
+      - bb trombone
+  Bassposaune:
+    aliases:
+      - bassposaune
+      - bass posaune
+      - bass trombone
+      - trombone basso
+      - trombone bass
+  Altposaune:
+    aliases:
+      - altposaune
+      - alto trombone
+      - trombone alto
+
+"09":
+  Tuba:
+    aliases:
+      - tuba
+      - tuben
+      - es-tuba
+      - eb tuba
+      - bb tuba
+      - b-tuba
+      - bass
+      - basses
+      - bass tuba
+  Sousaphon:
+    aliases:
+      - sousaphon
+      - sousaphone
+  Helikon:
+    aliases:
+      - helikon
+      - helicon
+  Kontrabass:
+    aliases:
+      - kontrabass
+      - kontra-bass
+      - string bass
+      - double bass
+      - contrabass
+      - contrebasse
+
+"10":
+  Schlagwerk:
+    keep_original_name: true
+    aliases:
+      - schlagwerk
+      - schlagzeug
+      - percussion
+      - perc
+      - drums
+      - drum set
+      - drumset
+      - drum kit
+      - pauken
+      - timpani
+      - kettledrums
+      - mallets
+      - keyboard percussion
+      - stabspiele
+      - glockenspiel
+      - bells
+      - xylophon
+      - xylophone
+      - vibraphon
+      - vibraphone
+      - vibes
+      - marimba
+      - marimbaphon
+      - marimbaphone
+      - kleine trommel
+      - snare drum
+      - snare
+      - große trommel
+      - bass drum
+      - becken
+      - cymbals
+      - hängebecken
+      - suspended cymbal
+      - hi-hat
+      - hihat
+      - tom
+      - tom toms
+      - tom-toms
+      - tamburin
+      - tambourine
+      - triangel
+      - triangle
+      - claves
+      - guiro
+      - cabasa
+      - shaker
+      - holzblock
+      - wood block
+      - tempelblock
+      - temple blocks
+      - cowbell
+      - bongos
+      - congas
+      - timbales
+      - drum 1
+      - drum 2
+
+"11":
+  Violine:
+    aliases:
+      - violine
+      - violin
+      - geige
+      - violino
+  Viola:
+    aliases:
+      - viola
+      - bratsche
+  Violoncello:
+    aliases:
+      - violoncello
+      - cello
+  Harfe:
+    aliases:
+      - harfe
+      - harp
+      - arpa
+  Klavier:
+    aliases:
+      - klavier
+      - piano
+      - pianoforte
+  Orgel:
+    aliases:
+      - orgel
+      - organ
+  Akkordeon:
+    aliases:
+      - akkordeon
+      - accordion
+  Gitarre:
+    aliases:
+      - gitarre
+      - guitar
+      - chitarra
+  E-Bass:
+    aliases:
+      - e-bass
+      - e bass
+      - bass guitar
+      - electric bass
+  Synthesizer:
+    aliases:
+      - synthesizer
+      - synth
+      - keyboard
+  Gesang:
+    aliases:
+      - gesang
+      - vocals
+      - voice
+      - chor
+      - choir
+      - solo
