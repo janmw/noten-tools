@@ -120,48 +120,43 @@ def ask_manual_identification(
     mapper: InstrumentMapper,
     raw_text: str,
 ) -> Identification:
-    """Lässt User Code+Instrument auswählen + Nummer/Zusatz eingeben."""
-    instruments = mapper.known_instruments()
-    choices = [f"{code}  {name}" for code, name in instruments]
-    pick = questionary.autocomplete(
-        f"Stimme manuell zuordnen (OCR las: '{raw_text[:60]}'). Instrument:",
-        choices=choices,
-        match_middle=True,
-        validate=lambda v: v in choices or "Bitte aus der Liste wählen.",
-    ).ask()
-    if pick is None:
-        raise SystemExit("Abbruch.")
-    code, name = pick.split("  ", 1)
+    """Lässt User die Stimme als Freitext eingeben (z.B. 'Klarinette 2 in B').
 
-    nummer = questionary.text(
-        "Nummer (z.B. 1, 2, 3 — leer lassen wenn keine):",
-        validate=lambda v: not v or v.strip().isdigit() or "Bitte Ziffer oder leer.",
+    Versucht zunächst, die Eingabe automatisch zu zerlegen (Code/Name/Nummer/Zusatz).
+    Bei unbekanntem Instrument wird der Code separat abgefragt; der eingegebene Text
+    wird dann direkt als Instrumenten-Name übernommen.
+    """
+    typed = questionary.text(
+        f"Stimme manuell eingeben (OCR las: '{raw_text[:60]}'):",
+        validate=lambda v: bool(v.strip()) or "Bitte etwas eingeben.",
     ).ask()
-    if nummer is None:
+    if typed is None:
         raise SystemExit("Abbruch.")
-    nummer = (nummer or "").strip()
+    typed = typed.strip()
 
-    zusatz = questionary.text(
-        "Zusatz (z.B. 'in B', 'in Es' — leer lassen wenn keiner):",
+    ident = mapper.identify(typed)
+    if ident is not None:
+        return Identification(
+            code=ident.code,
+            instrument=ident.instrument,
+            nummer=ident.nummer,
+            zusatz=ident.zusatz,
+            source_text=raw_text,
+        )
+
+    valid_codes = mapper.known_codes()
+    code = questionary.text(
+        f"Instrument unbekannt. Code (z.B. {', '.join(valid_codes[:4])}, …) für '{typed}':",
+        validate=lambda v: v.strip() in valid_codes or f"Bitte einen gültigen Code eingeben: {', '.join(valid_codes)}",
     ).ask()
-    if zusatz is None:
+    if code is None:
         raise SystemExit("Abbruch.")
-    zusatz = (zusatz or "").strip()
-
-    instrument_name = name
-    # Bei keep_original_name darf der OCR-Text als Name fließen — wir bieten an
-    code_info = mapper._codes.get(code, {}).get(name, {})
-    if code_info.get("keep_original_name"):
-        custom = questionary.text(
-            f"Originalname aus Stimme verwenden? (Enter = '{name}', oder eigene Eingabe)",
-        ).ask()
-        if custom and custom.strip():
-            instrument_name = custom.strip()
+    code = code.strip()
 
     return Identification(
         code=code,
-        instrument=instrument_name,
-        nummer=nummer,
-        zusatz=zusatz,
+        instrument=typed,
+        nummer="",
+        zusatz="",
         source_text=raw_text,
     )

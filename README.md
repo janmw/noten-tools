@@ -23,7 +23,7 @@ noten-verarbeitung [PDF] [Flags]
    * Titel mittig oben (groß)
    * Stimmenbezeichnung oben links
    * Komponist/Arrangeur oben rechts
-5. Bei OCR-Unsicherheit (Confidence unter Schwelle oder Instrument unbekannt) öffnet sich die betroffene Seite via `xdg-open` zur Vorschau, der User wählt das Instrument aus einer Liste, gibt Nummer + Zusatz (z. B. `in B`) ein. Die Zuordnung wird in `~/.config/noten-tools/learned_aliases.yaml` für die Zukunft gelernt.
+5. Bei OCR-Unsicherheit (Confidence unter Schwelle oder Instrument unbekannt) öffnet sich die betroffene Seite via `xdg-open` zur Vorschau, der User tippt die Stimme als Freitext ein (z. B. `Klarinette 2 in B`). Wenn die Eingabe einem bekannten Instrument entspricht, wird sie automatisch in Code/Name/Nummer/Zusatz zerlegt; ist das Instrument unbekannt, wird zusätzlich nur der Code (00–11) abgefragt. Die Zuordnung wird in `~/.config/noten-tools/learned_aliases.yaml` für die Zukunft gelernt.
 6. Pro Stimme wird ein eigenes PDF erzeugt:
    ```
    [Archivnr] - [Titel]/
