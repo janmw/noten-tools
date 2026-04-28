@@ -28,7 +28,7 @@ class Config:
     a5: bool = False
     stamp_enabled_default: bool = True
     ocr_lang: str = "deu+eng"
-    ocr_confidence: int = 70
+    ocr_confidence: int = 50
     ocr_dpi: int = 300
     logo_path: str = ""
     font_path: str = ""

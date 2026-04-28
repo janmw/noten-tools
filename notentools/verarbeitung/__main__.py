@@ -110,9 +110,17 @@ def identify_pages(
             continue
 
         ident = mapper.identify(hdr.voice_text)
+        # Horn ohne erkannte Stimmung ("F-Horn"/"Es-Horn"/...) gilt als unsicher,
+        # damit der User die Stimmung interaktiv ergänzen kann.
+        horn_without_pitch = (
+            ident is not None
+            and ident.code == "05"
+            and not (ident.instrument.lower().endswith("-horn"))
+        )
         unsure = (
             ident is None
             or hdr.voice_conf < confidence_threshold
+            or horn_without_pitch
         )
         if unsure:
             ident = _resolve_unsure(pdf_path, idx, hdr, mapper, log)

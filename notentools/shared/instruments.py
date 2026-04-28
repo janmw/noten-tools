@@ -12,6 +12,7 @@ Beispiele:
 
 from __future__ import annotations
 
+import difflib
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -62,6 +63,12 @@ _KEY_NORMAL = {
 def _normalize(text: str) -> str:
     text = unicodedata.normalize("NFKC", text).strip().lower()
     text = re.sub(r"\s+", " ", text)
+    # OCR liest Umlaute oft fehlerhaft — auf Basisbuchstaben falten,
+    # damit "Flöte"/"Flote"/"Flo te" alle den gleichen Index-Schlüssel haben.
+    text = (text.replace("ä", "a")
+                .replace("ö", "o")
+                .replace("ü", "u")
+                .replace("ß", "ss"))
     return text
 
 
@@ -113,21 +120,62 @@ class InstrumentMapper:
         if not text:
             return None
         if text in self._learned:
-            return self._parse_learned(text, raw_text)
+            return self._post_process(self._parse_learned(text, raw_text))
 
         nummer, zusatz, leftover = self._extract_nummer_und_zusatz(text)
         instrument_match = self._find_instrument(leftover)
         if instrument_match is None:
+            instrument_match = self._fuzzy_find_instrument(leftover)
+        if instrument_match is None:
             return None
         code, normalname, keep_original = instrument_match
         instrument_name = self._format_instrument_name(raw_text, normalname, keep_original)
-        return Identification(
+        ident = Identification(
             code=code,
             instrument=instrument_name,
             nummer=nummer,
             zusatz=zusatz,
             source_text=raw_text,
         )
+        return self._post_process(ident)
+
+    def _fuzzy_find_instrument(self, text: str) -> tuple[str, str, bool] | None:
+        """Sucht den ähnlichsten Index-Eintrag bei kleinen OCR-Abweichungen."""
+        if not text:
+            return None
+        candidates = list(self._index.keys())
+        # cutoff 0.78 erwischt kleine Buchstabendreher / fehlende Buchstaben
+        match = difflib.get_close_matches(text, candidates, n=1, cutoff=0.78)
+        if not match:
+            # Versuch über Token-Fenster, falls nur ein Teil ähnlich ist
+            tokens = text.split()
+            for size in range(min(3, len(tokens)), 0, -1):
+                for start in range(0, len(tokens) - size + 1):
+                    candidate = " ".join(tokens[start : start + size])
+                    m = difflib.get_close_matches(candidate, candidates, n=1, cutoff=0.82)
+                    if m:
+                        return self._index[m[0]]
+            return None
+        return self._index[match[0]]
+
+    def _post_process(self, ident: Identification) -> Identification:
+        """Wendet Sonderregeln nach erfolgter Identifikation an."""
+        # Hörner: Stimmung in den Namen verschmelzen ("F-Horn", "Es-Horn", ...).
+        # "Horn" ohne Stimmung bleibt — wird vom Aufrufer als unsicher behandelt.
+        if ident.code == "05" and ident.instrument == "Horn" and ident.zusatz.startswith("in "):
+            tonart = ident.zusatz[3:].strip()
+            if tonart:
+                # "Es" und "F" stehen typischerweise so im Filenamen
+                tonart_str = "Es" if tonart.lower() == "es" else tonart.upper() if len(tonart) == 1 else tonart
+                return Identification(
+                    code=ident.code,
+                    instrument=f"{tonart_str}-Horn",
+                    nummer=ident.nummer,
+                    zusatz="",
+                    source_text=ident.source_text,
+                    confidence=ident.confidence,
+                )
+        return ident
 
     def _parse_learned(self, normalized: str, raw_text: str) -> Identification:
         identifier = self._learned[normalized]

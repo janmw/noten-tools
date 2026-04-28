@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pytesseract
-from PIL import Image
+from PIL import Image, ImageChops
 
 
 @dataclass
@@ -89,12 +89,29 @@ def _aggregate_blocks(rows: list[dict]) -> list[dict]:
     return out
 
 
+def _filter_red(image: Image.Image) -> Image.Image:
+    """Setzt rote Pixel auf Weiß. Schützt davor, dass der rote Archivstempel
+    als Stimmenbezeichnung gelesen wird — die Stimme ist immer in Schwarz/Grau.
+    """
+    img = image.convert("RGB")
+    r, g, b = img.split()
+    diff_rg = ImageChops.subtract(r, g)
+    diff_rb = ImageChops.subtract(r, b)
+    threshold = 30
+    mask_rg = diff_rg.point(lambda v: 255 if v > threshold else 0).convert("L")
+    mask_rb = diff_rb.point(lambda v: 255 if v > threshold else 0).convert("L")
+    mask_red = ImageChops.multiply(mask_rg, mask_rb)
+    white = Image.new("RGB", img.size, (255, 255, 255))
+    return Image.composite(white, img, mask_red)
+
+
 def read_header(image: Image.Image, lang: str = "deu+eng") -> HeaderRead:
     """Liest den oberen Bereich und extrahiert Titel / Stimme / Komponist anhand der Block-Position.
 
     Erwartetes Layout: Stimme oben links als eigener Textblock,
     Titel oben mittig (groß), Komponist/Arrangeur oben rechts.
     """
+    image = _filter_red(image)
     img_w, img_h = image.size
     rows = _ocr_region(image, lang=lang)
     blocks = _aggregate_blocks(rows)

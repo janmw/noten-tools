@@ -42,7 +42,7 @@ noten-verarbeitung [PDF] [Flags]
 | `--logo-offset X,Y` | Logo-Verschiebung in mm relativ zum Default (X = nach rechts, Y = nach unten) |
 | `--archiv-offset X,Y` | Archivnummer-Verschiebung in mm relativ zum Default (X = nach links, Y = nach unten) |
 | `--lang LANG` | OCR-Sprache, z. B. `deu`, `eng`, `deu+eng` |
-| `--confidence N` | OCR-Confidence-Schwelle 0–100 (Default 70) |
+| `--confidence N` | OCR-Confidence-Schwelle 0–100 (Default 50) |
 | `--verbose` / `--quiet` | Mehr/weniger Konsolen-Logs |
 | `--dry-run` | Nur erkennen, keine Dateien schreiben |
 
