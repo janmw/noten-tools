@@ -7,6 +7,7 @@ import re
 import shutil
 import signal
 import subprocess
+import tempfile
 import time
 from pathlib import Path
 
@@ -84,24 +85,108 @@ def fzf_pick_pdf(cwd: Path) -> Path | None:
     return cwd / name
 
 
-def _capture_active_window() -> str | None:
-    """Liefert ein Token zur späteren Refokussierung des Terminal-Fensters.
+def _ancestor_pids() -> list[int]:
+    """Sammelt die PID-Kette vom Elternprozess (Shell) bis init/systemd.
 
-    Unterstützt Hyprland (hyprctl) und X11 (xdotool). Andere Wayland-Compositors
-    bleiben unbedient — dann ist Refokus best-effort und wird einfach übersprungen.
+    Eine dieser PIDs ist normalerweise die des Terminal-Fensters — KWin/Hypr/etc.
+    kennen Fenster über die Window-PID, daher reicht uns die Kette für den Refokus.
+    """
+    pids: list[int] = []
+    try:
+        pid = os.getppid()
+        seen: set[int] = set()
+        while pid > 1 and pid not in seen:
+            pids.append(pid)
+            seen.add(pid)
+            ppid: int | None = None
+            with open(f"/proc/{pid}/status") as fh:
+                for line in fh:
+                    if line.startswith("PPid:"):
+                        ppid = int(line.split()[1])
+                        break
+            if ppid is None or ppid == pid:
+                break
+            pid = ppid
+    except Exception:
+        pass
+    return pids
+
+
+def _focus_kde_wayland(pids: list[int]) -> bool:
+    """Aktiviert via KWin-Scripting das Fenster, dessen PID in der Kette vorkommt."""
+    if not pids or shutil.which("qdbus6") is None:
+        return False
+    pid_array = "[" + ",".join(str(p) for p in pids) + "]"
+    js = (
+        "var pids = " + pid_array + ";\n"
+        "var wins = (typeof workspace.windowList === 'function')\n"
+        "    ? workspace.windowList() : workspace.windows;\n"
+        "for (var i = 0; i < wins.length; i++) {\n"
+        "    if (pids.indexOf(wins[i].pid) >= 0) {\n"
+        "        workspace.activeWindow = wins[i];\n"
+        "        break;\n"
+        "    }\n"
+        "}\n"
+    )
+    script_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".js", prefix="noten-focus-", delete=False
+        ) as fh:
+            fh.write(js)
+            script_path = fh.name
+        subprocess.run(
+            ["qdbus6", "org.kde.KWin", "/Scripting",
+             "org.kde.kwin.Scripting.loadScript", script_path],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=3,
+        )
+        subprocess.run(
+            ["qdbus6", "org.kde.KWin", "/Scripting",
+             "org.kde.kwin.Scripting.start"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=3,
+        )
+        # Skript läuft im KWin-Event-Loop — kurz warten, bevor wir entladen
+        time.sleep(0.05)
+        subprocess.run(
+            ["qdbus6", "org.kde.KWin", "/Scripting",
+             "org.kde.kwin.Scripting.unloadScript", script_path],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=3,
+        )
+        return True
+    except Exception:
+        return False
+    finally:
+        if script_path:
+            try:
+                os.unlink(script_path)
+            except Exception:
+                pass
+
+
+def _capture_active_window() -> str | None:
+    """Liefert ein Token zur späteren Refokussierung des aufrufenden Fensters.
+
+    Unterstützt Hyprland (hyprctl), KDE Plasma Wayland (qdbus6 + KWin-Scripting),
+    und X11 (xdotool). Bei anderen Compositors ist Refokus best-effort und wird
+    stillschweigend übersprungen.
     """
     if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE") and shutil.which("hyprctl"):
         try:
             out = subprocess.check_output(
                 ["hyprctl", "activewindow"], text=True, timeout=2
             )
-            # Erste Zeile: "Window 0xADDR -> classname:"
             first = out.splitlines()[0] if out else ""
             parts = first.split()
             if len(parts) >= 2 and parts[0] == "Window":
                 return f"hypr:{parts[1]}"
         except Exception:
-            return None
+            pass
+    is_kde = "kde" in os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
+    is_wayland = bool(os.environ.get("WAYLAND_DISPLAY"))
+    if is_kde and is_wayland and shutil.which("qdbus6"):
+        pids = _ancestor_pids()
+        if pids:
+            return "kde:" + ",".join(str(p) for p in pids)
     if shutil.which("xdotool"):
         try:
             wid = subprocess.check_output(
@@ -110,7 +195,7 @@ def _capture_active_window() -> str | None:
             if wid:
                 return f"xdo:{wid}"
         except Exception:
-            return None
+            pass
     return None
 
 
@@ -123,6 +208,9 @@ def _focus_window(token: str | None) -> None:
                 ["hyprctl", "dispatch", "focuswindow", f"address:{token[5:]}"],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=2,
             )
+        elif token.startswith("kde:"):
+            pids = [int(p) for p in token[4:].split(",") if p.strip()]
+            _focus_kde_wayland(pids)
         elif token.startswith("xdo:"):
             subprocess.run(
                 ["xdotool", "windowactivate", token[4:]],
