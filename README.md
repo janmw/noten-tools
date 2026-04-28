@@ -84,6 +84,38 @@ Bei Hörnern und Bariton/Euphonium ohne erkennbare Stimmung im OCR-Text wird die
 | 10 | Schlagwerk |
 | 11 | Streicher und Sonstiges |
 
+### `noten-stempel`
+
+Stempelt Logo + Archivnummer auf die **erste Seite** von einer oder mehreren PDFs. Keine Skalierung, kein Splitting — nur Stempel-Overlay.
+
+```
+noten-stempel [DATEI ...] [Flags]
+```
+
+Ohne Datei-Argumente öffnet sich `fzf` mit Mehrfachauswahl. Die Archivnummer wird einmalig abgefragt (oder per `--nr` übergeben) und gilt für **alle** ausgewählten Dateien.
+
+| Flag | Bedeutung |
+|---|---|
+| `--nr NNNN` | Archivnummer (4-stellig). Ohne Flag: interaktiver Prompt |
+| `--logo PATH` | Alternatives Logo (überschreibt Default aus Config) |
+| `--logo-offset X,Y` | Logo-Verschiebung in mm relativ zum Default |
+| `--archiv-offset X,Y` | Archivnummer-Verschiebung in mm relativ zum Default |
+| `--backup` | `<datei>.pdf.bak` neben dem Original anlegen (Default: kein Backup) |
+| `--out PATH` | Ergebnis nach PATH schreiben, Original unangetastet (nur bei einer Eingabedatei) |
+
+Beispiele:
+
+```bash
+# Mehrere Stimmen auf einmal stempeln
+noten-stempel stimme1.pdf stimme2.pdf --nr 1234
+
+# fzf-Multiauswahl, Nummer interaktiv
+noten-stempel
+
+# Einzelne Datei separat ablegen
+noten-stempel stimme.pdf --nr 1234 --out gestempelt.pdf
+```
+
 ### `noten-pdf-fix`
 
 Reparatur- und Aufräum-Werkzeug für einzelne oder mehrere PDFs. Operationen lassen sich kombinieren und werden in fester Reihenfolge angewendet: **Decrypt → Repair → No-Rotate → Compress**.
@@ -194,6 +226,7 @@ noten-tools/
 │   ├── shared/        # geteilte Bibliothek (config, logging, instruments, pdf_io, stamp, paths)
 │   ├── verarbeitung/  # noten-verarbeitung CLI
 │   ├── pdf_fix/       # noten-pdf-fix CLI
+│   ├── stempel/       # noten-stempel CLI
 │   └── aliases/       # noten-tools-aliases CLI
 ├── data/instruments.yaml
 ├── assets/{logo.png, 00_stamp.ttf}
@@ -204,7 +237,6 @@ noten-tools/
 
 ## Geplante weitere Befehle
 
-* `noten-stempel` — eigenständiger Stempel-Befehl ohne Splitting
 * `noten-unbooklet` — Booklet-Layout auflösen
 
 ## Entwicklung

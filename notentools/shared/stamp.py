@@ -91,15 +91,21 @@ def stamp_pdf(
     config: Config,
     logo_offset_mm: tuple[float, float] = (0.0, 0.0),
     archiv_offset_mm: tuple[float, float] = (0.0, 0.0),
+    first_page_only: bool = False,
 ) -> None:
-    """Legt einen Stempel über jede Seite von src und schreibt nach dst."""
+    """Legt einen Stempel über die Seiten von src und schreibt nach dst.
+
+    Default: jede Seite. Mit first_page_only=True nur die erste Seite.
+    """
     logo_path = Path(config.logo_path) if config.logo_path else None
     font_path = Path(config.font_path)
 
     src_pdf = pikepdf.open(str(src))
     out = pikepdf.Pdf.new()
-    for page in src_pdf.pages:
-        # Seitengröße
+    for idx, page in enumerate(src_pdf.pages):
+        out.pages.append(page)
+        if first_page_only and idx > 0:
+            continue
         mediabox = page.mediabox
         page_w = float(mediabox[2]) - float(mediabox[0])
         page_h = float(mediabox[3]) - float(mediabox[1])
@@ -115,9 +121,6 @@ def stamp_pdf(
             archiv_offset_mm,
         )
         overlay_pdf = pikepdf.open(io.BytesIO(overlay_bytes))
-        # Inhalt der Originalseite + Overlay zusammenführen
-        new_page = out.copy_foreign(page)
-        out.pages.append(new_page)
         out.pages[-1].add_overlay(overlay_pdf.pages[0])
 
     dst.parent.mkdir(parents=True, exist_ok=True)

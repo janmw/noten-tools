@@ -38,10 +38,6 @@ class Config:
     def load(cls) -> "Config":
         path = config_file()
         cfg = cls()
-        if not cfg.logo_path:
-            cfg.logo_path = str(default_logo())
-        if not cfg.font_path:
-            cfg.font_path = str(default_font())
         if path.exists():
             with path.open("r", encoding="utf-8") as fh:
                 data = yaml.safe_load(fh) or {}
@@ -52,6 +48,12 @@ class Config:
             for key, value in stamp_data.items():
                 if hasattr(cfg.stamp, key):
                     setattr(cfg.stamp, key, value)
+        # Defaults für nicht-gesetzte Pfade NACH dem File-Read,
+        # damit leere Strings in der Config-Datei nicht den Default verdrängen.
+        if not cfg.logo_path:
+            cfg.logo_path = str(default_logo())
+        if not cfg.font_path:
+            cfg.font_path = str(default_font())
         return cfg
 
     def save(self) -> None:

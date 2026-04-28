@@ -87,6 +87,7 @@ main() {
     echo "Verfügbare Befehle:"
     echo "  noten-verarbeitung       — Notensatz in Stimmen splitten"
     echo "  noten-pdf-fix            — PDF reparieren / entschlüsseln / komprimieren / Auto-Rotate stoppen"
+    echo "  noten-stempel            — Logo + Archivnummer auf erste Seite stempeln"
     echo "  noten-tools-aliases sync — Gelernte Aliase als Repo-Patch ausgeben"
     echo
     echo "Tipp: Falls die Befehle nicht gefunden werden, neue Shell öffnen oder"
