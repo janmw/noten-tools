@@ -89,7 +89,7 @@ def scale_pdf_to_target(src: Path, dst: Path, a5: bool = False) -> None:
         writer.write(fh)
 
 
-def crop_top_band(image: Image.Image, fraction: float = 0.15) -> Image.Image:
+def crop_top_band(image: Image.Image, fraction: float = 0.30) -> Image.Image:
     """Schneidet das obere `fraction`-Band des Bildes für die Header-OCR aus."""
     w, h = image.size
     band_h = int(h * fraction)

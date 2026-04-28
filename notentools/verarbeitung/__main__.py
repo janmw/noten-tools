@@ -93,7 +93,7 @@ def identify_pages(
     last_known: Identification | None = None
 
     for idx, img in enumerate(images):
-        band = pdf_io.crop_top_band(img, fraction=0.18)
+        band = pdf_io.crop_top_band(img, fraction=0.30)
         hdr = read_header(band, lang=lang)
         hdr.page_index = idx
         headers.append(hdr)

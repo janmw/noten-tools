@@ -51,13 +51,19 @@ def _ocr_region(image: Image.Image, lang: str) -> list[dict]:
     return rows
 
 
-def _aggregate_lines(rows: list[dict]) -> list[dict]:
-    """Bündelt Wörter zu Zeilen (block, par, line)."""
-    lines: dict[tuple[int, int, int], dict] = {}
+def _aggregate_blocks(rows: list[dict]) -> list[dict]:
+    """Bündelt Wörter zu Tesseract-Blöcken (block_num).
+
+    Tesseracts Layout-Analyse legt für visuell getrennte Textbereiche eigene
+    Blöcke an — für Notensätze typischerweise: Stimmen-Block oben links,
+    Titel-Block oben mittig (groß), Komponisten-Block oben rechts. Wir nutzen
+    diese Block-Trennung statt eigener Geometrie-Heuristik.
+    """
+    blocks: dict[int, dict] = {}
     for r in rows:
-        key = (r["block_num"], r["par_num"], r["line_num"])
-        if key not in lines:
-            lines[key] = {
+        key = r["block_num"]
+        if key not in blocks:
+            blocks[key] = {
                 "text": r["text"],
                 "conf_sum": r["conf"],
                 "n": 1,
@@ -67,39 +73,45 @@ def _aggregate_lines(rows: list[dict]) -> list[dict]:
                 "bottom": r["top"] + r["height"],
             }
         else:
-            lines[key]["text"] += " " + r["text"]
-            lines[key]["conf_sum"] += r["conf"]
-            lines[key]["n"] += 1
-            lines[key]["left"] = min(lines[key]["left"], r["left"])
-            lines[key]["right"] = max(lines[key]["right"], r["left"] + r["width"])
-            lines[key]["top"] = min(lines[key]["top"], r["top"])
-            lines[key]["bottom"] = max(lines[key]["bottom"], r["top"] + r["height"])
+            blocks[key]["text"] += " " + r["text"]
+            blocks[key]["conf_sum"] += r["conf"]
+            blocks[key]["n"] += 1
+            blocks[key]["left"] = min(blocks[key]["left"], r["left"])
+            blocks[key]["right"] = max(blocks[key]["right"], r["left"] + r["width"])
+            blocks[key]["top"] = min(blocks[key]["top"], r["top"])
+            blocks[key]["bottom"] = max(blocks[key]["bottom"], r["top"] + r["height"])
     out = []
-    for v in lines.values():
+    for v in blocks.values():
         v["avg_conf"] = v["conf_sum"] / max(v["n"], 1)
+        v["center_x"] = (v["left"] + v["right"]) / 2
+        v["height"] = v["bottom"] - v["top"]
         out.append(v)
     return out
 
 
 def read_header(image: Image.Image, lang: str = "deu+eng") -> HeaderRead:
-    """Liest die obere Bandfläche und extrahiert Titel / Stimme / Komponist anhand der x-Position."""
+    """Liest den oberen Bereich und extrahiert Titel / Stimme / Komponist anhand der Block-Position.
+
+    Erwartetes Layout: Stimme oben links als eigener Textblock,
+    Titel oben mittig (groß), Komponist/Arrangeur oben rechts.
+    """
     img_w, img_h = image.size
     rows = _ocr_region(image, lang=lang)
-    lines = _aggregate_lines(rows)
+    blocks = _aggregate_blocks(rows)
 
     third = img_w / 3
-    left_lines = [l for l in lines if l["right"] <= third * 1.05]
-    right_lines = [l for l in lines if l["left"] >= 2 * third * 0.95]
-    middle_lines = [l for l in lines if l not in left_lines and l not in right_lines]
+    # Block gehört nach links/rechts/mitte anhand seiner horizontalen Mitte
+    left_blocks = [b for b in blocks if b["center_x"] < third]
+    right_blocks = [b for b in blocks if b["center_x"] > 2 * third]
+    middle_blocks = [b for b in blocks if third <= b["center_x"] <= 2 * third]
 
-    def biggest(lns):
-        if not lns:
-            return None
-        return max(lns, key=lambda x: (x["bottom"] - x["top"]) * x["avg_conf"])
-
-    voice = biggest(left_lines)
-    composer = biggest(right_lines)
-    title = biggest(middle_lines)
+    # Stimme: oberster Block in der linken Spalte (Stimmenbezeichnung steht meist klein
+    # über dem ersten System — sie ist NICHT der größte Text).
+    voice = min(left_blocks, key=lambda b: b["top"]) if left_blocks else None
+    # Komponist: oberster Block in der rechten Spalte
+    composer = min(right_blocks, key=lambda b: b["top"]) if right_blocks else None
+    # Titel: größter Block in der Mitte (Titel ist typischerweise der höchste Text)
+    title = max(middle_blocks, key=lambda b: b["height"]) if middle_blocks else None
 
     voice_text = voice["text"] if voice else ""
     composer_text = composer["text"] if composer else ""
