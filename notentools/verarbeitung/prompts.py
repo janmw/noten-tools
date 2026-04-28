@@ -102,16 +102,33 @@ def open_preview(pdf_path: Path) -> subprocess.Popen | None:
         return None
 
 
-def close_preview(proc: subprocess.Popen | None) -> None:
-    if proc is None:
-        return
-    try:
-        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-    except (ProcessLookupError, PermissionError):
-        pass
-    except Exception:
+def close_preview(proc: subprocess.Popen | None, pdf_path: Path | None = None) -> None:
+    """Beendet den Preview-Viewer.
+
+    Schickt SIGTERM an die Prozessgruppe des gestarteten Prozesses. Da `xdg-open`
+    den eigentlichen Viewer häufig per D-Bus an einen bestehenden Prozess delegiert,
+    erwischt das nicht immer das richtige Fenster — als Fallback wird per `pkill -f`
+    gezielt der Prozess gesucht, dessen Kommandozeile den (eindeutigen) Tempfile-Pfad
+    enthält.
+    """
+    if proc is not None:
         try:
-            proc.terminate()
+            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            pass
+        except Exception:
+            try:
+                proc.terminate()
+            except Exception:
+                pass
+
+    if pdf_path is not None and shutil.which("pkill") is not None:
+        try:
+            subprocess.run(
+                ["pkill", "-f", str(pdf_path)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
         except Exception:
             pass
 

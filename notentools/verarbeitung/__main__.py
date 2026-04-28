@@ -142,7 +142,7 @@ def _resolve_unsure(
         try:
             ident = prompts.ask_manual_identification(mapper, hdr.voice_text)
         finally:
-            prompts.close_preview(proc)
+            prompts.close_preview(proc, pdf_path=tmp_path)
         return ident
     finally:
         try:
