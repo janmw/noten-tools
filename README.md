@@ -13,6 +13,7 @@ Das Repo bündelt mehrere CLI-Befehle mit gemeinsamem Präfix `noten-`. Sie teil
 | `noten-verarbeitung` | Notensatz-PDF in einzelne Stimmen splitten, skalieren, stempeln | [docs/noten-verarbeitung.md](docs/noten-verarbeitung.md) |
 | `noten-stempel` | Logo + Archivnummer auf die erste Seite stempeln | [docs/noten-stempel.md](docs/noten-stempel.md) |
 | `noten-pdf-fix` | PDFs reparieren, entschlüsseln, komprimieren, Auto-Rotate stoppen | [docs/noten-pdf-fix.md](docs/noten-pdf-fix.md) |
+| `noten-booklet` | A3-Booklet-Scans in A4-Seiten in korrekter Reihenfolge auflösen | [docs/noten-booklet.md](docs/noten-booklet.md) |
 | `noten-tools-aliases` | Gelernte OCR-Aliase verwalten und ins Repo zurückspielen | [docs/noten-tools-aliases.md](docs/noten-tools-aliases.md) |
 
 ## 📦 Installation
@@ -38,6 +39,9 @@ noten-stempel stimme.pdf --nr 1234
 
 # PDF reparieren und gleichzeitig komprimieren
 noten-pdf-fix scan.pdf --repair --compress
+
+# A3-Booklet-Scan einer Partitur zu A4 in richtiger Reihenfolge auflösen
+noten-booklet partitur scan.pdf
 ```
 
 Volle Workflow- und Flag-Doku jeweils in `docs/<befehl>.md`.
@@ -50,7 +54,7 @@ Details: [docs/configuration.md](docs/configuration.md).
 
 ## 🛣️ Roadmap
 
-* `noten-unbooklet` — Booklet-Layout (Imposition) wieder in Einzelseiten zerlegen
+Aktuell keine offenen Punkte.
 
 Entwicklungs-Setup (venv, editierbare Installation, lokale Tests): [docs/development.md](docs/development.md).
 

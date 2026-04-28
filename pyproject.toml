@@ -28,6 +28,7 @@ noten-verarbeitung = "notentools.verarbeitung.__main__:main"
 noten-tools-aliases = "notentools.aliases.__main__:main"
 noten-pdf-fix = "notentools.pdf_fix.__main__:main"
 noten-stempel = "notentools.stempel.__main__:main"
+noten-booklet = "notentools.booklet.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["notentools*"]
