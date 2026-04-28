@@ -46,6 +46,26 @@ noten-verarbeitung [PDF] [Flags]
 | `--verbose` / `--quiet` | Mehr/weniger Konsolen-Logs |
 | `--dry-run` | Nur erkennen, keine Dateien schreiben |
 
+### Naming-Konventionen
+
+Stimmung wird im Dateinamen nur dann mitgeführt, wenn sie *nicht* der Stadtkapelle-üblichen entspricht:
+
+| Instrument | Standard (kein Zusatz) | Sonderfall im Namen |
+|---|---|---|
+| Flöte / Piccolo, Oboe / Fagott | in C | mit „in X" |
+| Klarinette | in B | `Es-Klarinette` (in Es) |
+| Bassklarinette | in B | mit „in X" |
+| Saxophone | – (Stimmung egal, durch Sopran/Alt/Tenor/Bariton definiert) | – |
+| Horn | – (Stimmung **immer** im Namen) | `F-Horn`, `Es-Horn`, … |
+| Trompete / Flügelhorn / Kornett | in B | mit „in X" |
+| Tenorhorn | in B | mit „in X" |
+| Bariton / Euphonium | – (Schlüssel **immer** im Namen) | `Bariton TC` (in B), `Bariton BC` (in C); analog Euphonium |
+| Posaune | in C | `B-Posaune` (in B) |
+| Tuba / Kontrabass | in C | mit „in X" |
+| Schlagwerk | – (Stimmung egal) | – |
+
+Bei Hörnern und Bariton/Euphonium ohne erkennbare Stimmung im OCR-Text wird die Identifikation als unsicher gewertet — der User wird dann interaktiv um die Stimmung gebeten.
+
 ### Instrumenten-Codes
 
 | Code | Familie |

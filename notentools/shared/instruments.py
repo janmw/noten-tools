@@ -15,7 +15,7 @@ from __future__ import annotations
 import difflib
 import re
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, replace as _dc_replace
 from pathlib import Path
 
 import yaml
@@ -40,6 +40,15 @@ class Identification:
             parts.append(self.zusatz)
         return " ".join(parts)
 
+    def needs_pitch(self) -> bool:
+        """True wenn das Instrument ohne Stimmung unvollständig ist (Aufrufer
+        sollte dann manuell nachfragen)."""
+        if self.code == "05" and not self.instrument.lower().endswith("-horn"):
+            return True
+        if self.code == "07" and self.instrument in {"Bariton", "Euphonium"}:
+            return True
+        return False
+
 
 _NUM_WORDS = {
     "1st": "1", "2nd": "2", "3rd": "3", "4th": "4", "5th": "5",
@@ -49,6 +58,23 @@ _NUM_WORDS = {
     "erste": "1", "zweite": "2", "dritte": "3", "vierte": "4", "fünfte": "5",
     "1": "1", "2": "2", "3": "3", "4": "4", "5": "5",
 }
+
+# Default-Stimmung pro (Code, Normalname): wenn die erkannte Stimmung dieser
+# entspricht (oder fehlt), wird sie nicht in den Filenamen geschrieben.
+_DEFAULT_PITCH: dict[tuple[str, str], str] = {
+    ("01", "Flöte"): "C",
+    ("01", "Piccolo"): "C",
+    ("02", "Oboe"): "C",
+    ("02", "Fagott"): "C",
+    ("03", "Bassklarinette"): "B",
+    ("06", "Trompete"): "B",
+    ("06", "Flügelhorn"): "B",
+    ("06", "Kornett"): "B",
+    ("07", "Tenorhorn"): "B",
+    ("09", "Tuba"): "C",
+    ("09", "Kontrabass"): "C",
+}
+
 
 _KEY_NORMAL = {
     "bb": "in B", "b": "in B",
@@ -159,22 +185,70 @@ class InstrumentMapper:
         return self._index[match[0]]
 
     def _post_process(self, ident: Identification) -> Identification:
-        """Wendet Sonderregeln nach erfolgter Identifikation an."""
-        # Hörner: Stimmung in den Namen verschmelzen ("F-Horn", "Es-Horn", ...).
-        # "Horn" ohne Stimmung bleibt — wird vom Aufrufer als unsicher behandelt.
-        if ident.code == "05" and ident.instrument == "Horn" and ident.zusatz.startswith("in "):
-            tonart = ident.zusatz[3:].strip()
-            if tonart:
-                # "Es" und "F" stehen typischerweise so im Filenamen
-                tonart_str = "Es" if tonart.lower() == "es" else tonart.upper() if len(tonart) == 1 else tonart
-                return Identification(
-                    code=ident.code,
-                    instrument=f"{tonart_str}-Horn",
-                    nummer=ident.nummer,
-                    zusatz="",
-                    source_text=ident.source_text,
-                    confidence=ident.confidence,
-                )
+        """Wendet Naming-Sonderregeln nach erfolgter Identifikation an.
+
+        Regeln (laut Stadtkapelle-Konvention):
+          * Saxophone (04) und Schlagwerk (10): Stimmung wird nicht im Namen geführt.
+          * Horn (05): Stimmung verschmilzt zum Präfix ("F-Horn", "Es-Horn"). Ohne
+            erkannte Stimmung bleibt "Horn" und needs_pitch() liefert True.
+          * Klarinette (03): in B normal -> kein Zusatz; in Es -> "Es-Klarinette".
+          * Bassklarinette (03): in B normal -> kein Zusatz.
+          * Trompete/Flügelhorn/Kornett (06): in B normal -> kein Zusatz.
+          * Tenorhorn (07): in B normal -> kein Zusatz.
+          * Bariton/Euphonium (07): in B -> "X TC", in C -> "X BC". Ohne
+            Stimmung bleibt der Name und needs_pitch() liefert True.
+          * Posaune (08): in C normal -> kein Zusatz; in B -> "B-Posaune".
+          * Flöte/Piccolo (01), Oboe/Fagott (02), Tuba/Kontrabass (09): in C
+            normal -> kein Zusatz.
+          * Alle nicht-normalen Stimmungen: "Instrument [Nummer] in X" wie bisher.
+        """
+        code = ident.code
+        name = ident.instrument
+        zusatz = ident.zusatz
+        pitch = zusatz[3:].strip() if zusatz.startswith("in ") else ""
+        pitch_lower = pitch.lower()
+
+        # Saxophone und Schlagwerk: Stimmung egal
+        if code in {"04", "10"}:
+            return _dc_replace(ident, zusatz="") if zusatz else ident
+
+        # Horn: Stimmung als Präfix verschmelzen ("F-Horn", "Es-Horn")
+        if code == "05" and name == "Horn":
+            if pitch:
+                return _dc_replace(ident, instrument=f"{pitch}-Horn", zusatz="")
+            return ident  # ohne Stimmung -> Aufrufer behandelt als unsicher
+
+        # Klarinette: in B default; in Es -> "Es-Klarinette"
+        if code == "03" and name == "Klarinette":
+            if pitch_lower in {"b", ""}:
+                return _dc_replace(ident, zusatz="")
+            if pitch_lower == "es":
+                return _dc_replace(ident, instrument="Es-Klarinette", zusatz="")
+            return ident
+
+        # Posaune: in C default; in B -> "B-Posaune"
+        if code == "08" and name == "Posaune":
+            if pitch_lower in {"c", ""}:
+                return _dc_replace(ident, zusatz="")
+            if pitch_lower == "b":
+                return _dc_replace(ident, instrument="B-Posaune", zusatz="")
+            return ident
+
+        # Bariton / Euphonium: TC (in B) / BC (in C); ohne Stimmung -> incomplete
+        if code == "07" and name in {"Bariton", "Euphonium"}:
+            if pitch_lower == "b":
+                return _dc_replace(ident, instrument=f"{name} TC", zusatz="")
+            if pitch_lower == "c":
+                return _dc_replace(ident, instrument=f"{name} BC", zusatz="")
+            return ident
+
+        # Standard-Default-Stimmung: passende Stimmung -> zusatz dropen
+        default_pitch = _DEFAULT_PITCH.get((code, name))
+        if default_pitch is not None:
+            if pitch_lower in {default_pitch.lower(), ""}:
+                return _dc_replace(ident, zusatz="")
+            return ident
+
         return ident
 
     def _parse_learned(self, normalized: str, raw_text: str) -> Identification:
@@ -206,6 +280,18 @@ class InstrumentMapper:
         m = re.search(r"\b(bb|eb)\b\s*$", text)
         if m and not zusatz:
             zusatz = "in " + _KEY_NORMAL.get(m.group(1), m.group(1).upper()).split()[-1]
+            text = text[: m.start()] + " " + text[m.end():]
+        # Präfix-Stimmung: "f-horn", "es-klarinette", "b-posaune"
+        m = re.match(r"^\s*(es|eb|bb|f|b|c|a|d)\s*-\s*(\S.*)$", text)
+        if m:
+            if not zusatz:
+                pitch_token = m.group(1)
+                zusatz = "in " + _KEY_NORMAL.get(pitch_token, pitch_token.upper()).split()[-1]
+            text = m.group(2)
+        # Schlüssel-Hinweis bei Bariton/Euphonium: "tc" -> in B, "bc" -> in C
+        m = re.search(r"\b(tc|bc)\b", text)
+        if m and not zusatz:
+            zusatz = "in B" if m.group(1).lower() == "tc" else "in C"
             text = text[: m.start()] + " " + text[m.end():]
         # Nummern erkennen
         nummer = ""
