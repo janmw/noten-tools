@@ -84,10 +84,64 @@ def fzf_pick_pdf(cwd: Path) -> Path | None:
     return cwd / name
 
 
+def _capture_active_window() -> str | None:
+    """Liefert ein Token zur späteren Refokussierung des Terminal-Fensters.
+
+    Unterstützt Hyprland (hyprctl) und X11 (xdotool). Andere Wayland-Compositors
+    bleiben unbedient — dann ist Refokus best-effort und wird einfach übersprungen.
+    """
+    if os.environ.get("HYPRLAND_INSTANCE_SIGNATURE") and shutil.which("hyprctl"):
+        try:
+            out = subprocess.check_output(
+                ["hyprctl", "activewindow"], text=True, timeout=2
+            )
+            # Erste Zeile: "Window 0xADDR -> classname:"
+            first = out.splitlines()[0] if out else ""
+            parts = first.split()
+            if len(parts) >= 2 and parts[0] == "Window":
+                return f"hypr:{parts[1]}"
+        except Exception:
+            return None
+    if shutil.which("xdotool"):
+        try:
+            wid = subprocess.check_output(
+                ["xdotool", "getactivewindow"], text=True, timeout=2
+            ).strip()
+            if wid:
+                return f"xdo:{wid}"
+        except Exception:
+            return None
+    return None
+
+
+def _focus_window(token: str | None) -> None:
+    if not token:
+        return
+    try:
+        if token.startswith("hypr:"):
+            subprocess.run(
+                ["hyprctl", "dispatch", "focuswindow", f"address:{token[5:]}"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=2,
+            )
+        elif token.startswith("xdo:"):
+            subprocess.run(
+                ["xdotool", "windowactivate", token[4:]],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=2,
+            )
+    except Exception:
+        pass
+
+
 def open_preview(pdf_path: Path) -> subprocess.Popen | None:
-    """Öffnet PDF mit xdg-open im Hintergrund. Gibt das Popen-Objekt zurück (zum späteren Beenden)."""
+    """Öffnet PDF mit xdg-open im Hintergrund.
+
+    Merkt sich vorher das aktive Fenster (Terminal) und fokussiert es nach kurzer
+    Wartezeit zurück, damit der User direkt weitertippen kann statt erst zurück
+    in das Terminal klicken zu müssen.
+    """
     if shutil.which("xdg-open") is None:
         return None
+    saved_window = _capture_active_window()
     try:
         proc = subprocess.Popen(
             ["xdg-open", str(pdf_path)],
@@ -95,8 +149,9 @@ def open_preview(pdf_path: Path) -> subprocess.Popen | None:
             stderr=subprocess.DEVNULL,
             start_new_session=True,
         )
-        # Kurz warten, damit der Viewer Zeit zum Starten hat
-        time.sleep(0.4)
+        # Viewer Zeit zum Starten geben, dann Terminal zurück in den Fokus
+        time.sleep(0.6)
+        _focus_window(saved_window)
         return proc
     except Exception:
         return None

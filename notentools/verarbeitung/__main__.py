@@ -24,7 +24,7 @@ from ..shared import pdf_io
 from ..shared.stamp import stamp_pdf
 from . import prompts
 from .ocr import HeaderRead, read_header
-from .split import Segment, build_segments, build_filename, build_folder_name
+from .split import Segment, build_segments, build_filename, build_folder_name, sanitize_filename
 
 
 def _parse_offset(value: str) -> tuple[float, float]:
@@ -167,22 +167,13 @@ def write_output(
     dry_run: bool,
 ) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
-    for seg in segments:
-        if seg.identification is None:
-            log.warning(
-                f"Segment ab Seite {seg.page_indices[0] + 1} ohne Identifikation übersprungen."
-            )
-            continue
-        filename = build_filename(archivnummer, titel, seg.identification)
-        target = out_dir / filename
-        log.info(f"Stimme: {filename}  (Seiten {[i + 1 for i in seg.page_indices]})")
-        if dry_run:
-            continue
+
+    def _write_pages(pages: list[int], target: Path) -> None:
         with tempfile.TemporaryDirectory(prefix="noten-split-") as tmp:
             tmp_dir = Path(tmp)
             extracted = tmp_dir / "extract.pdf"
             scaled = tmp_dir / "scaled.pdf"
-            pdf_io.extract_pages_to_pdf(pdf_path, seg.page_indices, extracted)
+            pdf_io.extract_pages_to_pdf(pdf_path, pages, extracted)
             pdf_io.scale_pdf_to_target(extracted, scaled, a5=a5)
             if do_stamp:
                 stamp_pdf(
@@ -195,6 +186,25 @@ def write_output(
                 )
             else:
                 shutil.copy2(scaled, target)
+
+    rest_pages: list[int] = []
+    for seg in segments:
+        if seg.identification is None:
+            rest_pages.extend(seg.page_indices)
+            continue
+        filename = build_filename(archivnummer, titel, seg.identification)
+        target = out_dir / filename
+        log.info(f"Stimme: {filename}  (Seiten {[i + 1 for i in seg.page_indices]})")
+        if dry_run:
+            continue
+        _write_pages(seg.page_indices, target)
+
+    if rest_pages:
+        rest_filename = sanitize_filename(f"{archivnummer} - {titel} - 99 Reste") + ".pdf"
+        rest_target = out_dir / rest_filename
+        log.info(f"Reste: {rest_filename}  (Seiten {[i + 1 for i in rest_pages]})")
+        if not dry_run:
+            _write_pages(rest_pages, rest_target)
 
 
 def main(argv: list[str] | None = None) -> int:

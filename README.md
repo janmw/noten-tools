@@ -29,6 +29,7 @@ noten-verarbeitung [PDF] [Flags]
    [Archivnr] - [Titel]/
      [Archivnr] - [Titel] - [Code] [Instrument][ Nummer][ Zusatz].pdf
    ```
+   Seiten, die zu keinem Stimmen-Segment zugeordnet werden konnten (z. B. Deckblatt, Inhalt, fehlerhafte Seiten am Anfang), landen gesammelt in `[Archivnr] - [Titel] - 99 Reste.pdf`.
 7. Skalierung auf A4 hochkant (oder A5 quer mit `--a5`), fit-to-page mit weißen Rändern.
 8. Stempel-Overlay (optional): Logo links oben, `Nr. XXXX` rechts oben.
 
