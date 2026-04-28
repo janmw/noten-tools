@@ -9,9 +9,9 @@ Operationen (kombinierbar, fest in dieser Reihenfolge angewendet):
 Wenn keine Operation gewählt ist, wird --no-rotate angewendet (Default).
 
 Auswahl: entweder direkt als Positional-Argumente oder per fzf-Mehrfachauswahl.
-Backup: Standardmäßig wird '<datei>.pdf.bak' angelegt.
-  --no-backup : kein Backup
-  --out PATH  : Ergebnis nach PATH schreiben, Original unangetastet (nur bei einer Datei)
+Backup: Standardmäßig kein Backup; Original wird direkt überschrieben.
+  --backup   : '<datei>.pdf.bak' neben dem Original anlegen
+  --out PATH : Ergebnis nach PATH schreiben, Original unangetastet (nur bei einer Datei)
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="printer",
         help="Ghostscript PDFSETTINGS (Default: printer).",
     )
-    p.add_argument("--no-backup", action="store_true", help="Kein .bak-Backup neben dem Original anlegen.")
+    p.add_argument("--backup", action="store_true", help="Vor Überschreiben '<datei>.pdf.bak' anlegen (Default: kein Backup).")
     p.add_argument("--out", type=Path, help="Ausgabe-Pfad (nur sinnvoll bei genau einer Datei).")
     p.add_argument("--verbose", action="store_true", help="Detaillierte Schritt-Logs.")
     p.add_argument("--quiet", action="store_true", help="Nur Warnungen und Fehler.")
@@ -128,7 +128,7 @@ def process_file(
     *,
     operations: list[str],
     out: Path | None,
-    no_backup: bool,
+    backup: bool,
     compress_level: str,
     password_cache: dict[Path, str],
     gs_path: str | None,
@@ -195,10 +195,10 @@ def process_file(
             shutil.copy2(current, target)
             log.info(f"[green]→ Ergebnis:[/] {target}")
         else:
-            if not no_backup:
-                backup = src.with_suffix(src.suffix + ".bak")
-                shutil.copy2(src, backup)
-                log.info(f"Backup angelegt: {backup.name}")
+            if backup:
+                backup_path = src.with_suffix(src.suffix + ".bak")
+                shutil.copy2(src, backup_path)
+                log.info(f"Backup angelegt: {backup_path.name}")
             shutil.copy2(current, src)
             log.info(f"[green]→ Aktualisiert:[/] {src.name}")
 
@@ -251,7 +251,7 @@ def main() -> None:
             f,
             operations=operations,
             out=args.out,
-            no_backup=args.no_backup,
+            backup=args.backup,
             compress_level=args.compress_level,
             password_cache=password_cache,
             gs_path=gs_path,

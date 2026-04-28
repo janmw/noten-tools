@@ -140,8 +140,8 @@ Ohne Datei-Argumente öffnet sich `fzf` mit Mehrfachauswahl (TAB markiert, ENTER
 
 | Flag | Wirkung |
 |---|---|
-| _Default_ | Legt `<datei>.pdf.bak` neben dem Original an und überschreibt das Original mit dem Ergebnis |
-| `--no-backup` | Kein Backup, Original wird direkt überschrieben |
+| _Default_ | Original wird direkt mit dem Ergebnis überschrieben (kein Backup) |
+| `--backup` | Vor Überschreiben `<datei>.pdf.bak` anlegen |
 | `--out PATH` | Schreibt das Ergebnis nach PATH, Original bleibt unangetastet (nur bei einer Eingabedatei) |
 
 Beispiele:
