@@ -1,253 +1,59 @@
-# noten-tools
+# 🎼 noten-tools
 
-Werkzeuge für die digitale Notenarchiv-Verwaltung der Stadtkapelle.
+> Werkzeuge für die digitale Notenarchiv-Verwaltung der Stadtkapelle.
 
-Das Repo bündelt mehrere CLI-Befehle mit dem gemeinsamen Präfix `noten-`. Sie teilen sich eine Python-Bibliothek (`notentools/shared`), ein Instrumenten-Mapping (`data/instruments.yaml`), Stempel-Assets (`assets/`) und eine User-Konfiguration unter `~/.config/noten-tools/`.
+> **Hinweis:** Ich bin kein professioneller Entwickler, sondern Notenwart. Dieses Projekt ist mit Unterstützung von KI-Assistenten entstanden — Code-Qualität und Architektur können entsprechend Lücken haben. Bug-Reports und Verbesserungsvorschläge sind ausdrücklich willkommen.
 
-## Befehle
+Das Repo bündelt mehrere CLI-Befehle mit gemeinsamem Präfix `noten-`. Sie teilen sich eine Python-Bibliothek (`notentools/shared`), ein Instrumenten-Mapping (`data/instruments.yaml`), Stempel-Assets (`assets/`) und eine User-Konfiguration unter `~/.config/noten-tools/`.
 
-### `noten-verarbeitung`
+## ✨ Übersicht
 
-Splittet einen gescannten PDF-Notensatz für sinfonisches Blasorchester in einzelne Stimmen-PDFs, skaliert sie auf A4 (oder A5-quer) und stempelt sie optional digital mit Logo + Archivnummer.
-
-```
-noten-verarbeitung [PDF] [Flags]
-```
-
-**Workflow** (interaktiv):
-
-1. PDF aus dem aktuellen Verzeichnis per `fzf` auswählen (oder als Argument übergeben).
-2. Eingabe: 4-stellige Archivnummer + Titel + Stempeln (j/n).
-3. OCR pro Seite (Tesseract `deu+eng`) auf den oberen 18 % der Seite.
-4. Eine neue Stimme beginnt, wenn alle drei Header gleichzeitig erkannt werden:
-   * Titel mittig oben (groß)
-   * Stimmenbezeichnung oben links
-   * Komponist/Arrangeur oben rechts
-5. Bei OCR-Unsicherheit (Confidence unter Schwelle oder Instrument unbekannt) öffnet sich die betroffene Seite via `xdg-open` zur Vorschau, der User tippt die Stimme als Freitext ein (z. B. `Klarinette 2 in B`). Wenn die Eingabe einem bekannten Instrument entspricht, wird sie automatisch in Code/Name/Nummer/Zusatz zerlegt; ist das Instrument unbekannt, wird zusätzlich nur der Code (00–11) abgefragt. Die Zuordnung wird in `~/.config/noten-tools/learned_aliases.yaml` für die Zukunft gelernt.
-6. Pro Stimme wird ein eigenes PDF erzeugt:
-   ```
-   [Archivnr] - [Titel]/
-     [Archivnr] - [Titel] - [Code] [Instrument][ Nummer][ Zusatz].pdf
-   ```
-   Seiten, die zu keinem Stimmen-Segment zugeordnet werden konnten (z. B. Deckblatt, Inhalt, fehlerhafte Seiten am Anfang), landen gesammelt in `[Archivnr] - [Titel] - 99 Reste.pdf`.
-7. Skalierung auf A4 hochkant (oder A5 quer mit `--a5`), fit-to-page mit weißen Rändern.
-8. Stempel-Overlay (optional): Logo links oben, `Nr. XXXX` rechts oben.
-
-**Flags**
-
-| Flag | Bedeutung |
-|---|---|
-| `--a5` | Ausgabeformat A5 quer statt A4 hochkant |
-| `--no-stamp` | Stempel deaktivieren |
-| `--logo PATH` | Alternatives Logo statt `assets/logo.png` |
-| `--logo-offset X,Y` | Logo-Verschiebung in mm relativ zum Default (X = nach rechts, Y = nach unten) |
-| `--archiv-offset X,Y` | Archivnummer-Verschiebung in mm relativ zum Default (X = nach links, Y = nach unten) |
-| `--lang LANG` | OCR-Sprache, z. B. `deu`, `eng`, `deu+eng` |
-| `--confidence N` | OCR-Confidence-Schwelle 0–100 (Default 50) |
-| `--verbose` / `--quiet` | Mehr/weniger Konsolen-Logs |
-| `--dry-run` | Nur erkennen, keine Dateien schreiben |
-
-### Naming-Konventionen
-
-Stimmung wird im Dateinamen nur dann mitgeführt, wenn sie *nicht* der Stadtkapelle-üblichen entspricht:
-
-| Instrument | Standard (kein Zusatz) | Sonderfall im Namen |
+| Befehl | Was er macht | Doku |
 |---|---|---|
-| Flöte / Piccolo, Oboe / Fagott | in C | mit „in X" |
-| Klarinette | in B | `Es-Klarinette` (in Es) |
-| Bassklarinette | in B | mit „in X" |
-| Saxophone | – (Stimmung egal, durch Sopran/Alt/Tenor/Bariton definiert) | – |
-| Horn | – (Stimmung **immer** im Namen) | `F-Horn`, `Es-Horn`, … |
-| Trompete / Flügelhorn / Kornett | in B | mit „in X" |
-| Tenorhorn | in B | mit „in X" |
-| Bariton / Euphonium | – (Schlüssel **immer** im Namen) | `Bariton TC` (in B), `Bariton BC` (in C); analog Euphonium |
-| Posaune | in C | `B-Posaune` (in B) |
-| Tuba / Kontrabass | in C | mit „in X" |
-| Schlagwerk | – (Stimmung egal) | – |
+| `noten-verarbeitung` | Notensatz-PDF in einzelne Stimmen splitten, skalieren, stempeln | [docs/noten-verarbeitung.md](docs/noten-verarbeitung.md) |
+| `noten-stempel` | Logo + Archivnummer auf die erste Seite stempeln | [docs/noten-stempel.md](docs/noten-stempel.md) |
+| `noten-pdf-fix` | PDFs reparieren, entschlüsseln, komprimieren, Auto-Rotate stoppen | [docs/noten-pdf-fix.md](docs/noten-pdf-fix.md) |
+| `noten-tools-aliases` | Gelernte OCR-Aliase verwalten und ins Repo zurückspielen | [docs/noten-tools-aliases.md](docs/noten-tools-aliases.md) |
 
-Bei Hörnern und Bariton/Euphonium ohne erkennbare Stimmung im OCR-Text wird die Identifikation als unsicher gewertet — der User wird dann interaktiv um die Stimmung gebeten.
-
-### Instrumenten-Codes
-
-| Code | Familie |
-|---|---|
-| 00 | Direktion / Partitur |
-| 01 | Flöten & Piccolo |
-| 02 | Oboe, Fagott und andere Doppelrohrbläser |
-| 03 | Klarinetten (alle Arten) |
-| 04 | Saxophone (alle Arten) |
-| 05 | Hörner |
-| 06 | Trompeten, Flügelhörner, Kornette |
-| 07 | Tenorhörner, Bariton, Euphonium |
-| 08 | Posaunen |
-| 09 | Tuben & Bässe |
-| 10 | Schlagwerk |
-| 11 | Streicher und Sonstiges |
-
-### `noten-stempel`
-
-Stempelt Logo + Archivnummer auf die **erste Seite** von einer oder mehreren PDFs. Keine Skalierung, kein Splitting — nur Stempel-Overlay.
-
-```
-noten-stempel [DATEI ...] [Flags]
-```
-
-Ohne Datei-Argumente öffnet sich `fzf` mit Mehrfachauswahl. Die Archivnummer wird einmalig abgefragt (oder per `--nr` übergeben) und gilt für **alle** ausgewählten Dateien.
-
-| Flag | Bedeutung |
-|---|---|
-| `--nr NNNN` | Archivnummer (4-stellig). Ohne Flag: interaktiver Prompt |
-| `--logo PATH` | Alternatives Logo (überschreibt Default aus Config) |
-| `--logo-offset X,Y` | Logo-Verschiebung in mm relativ zum Default |
-| `--archiv-offset X,Y` | Archivnummer-Verschiebung in mm relativ zum Default |
-| `--backup` | `<datei>.pdf.bak` neben dem Original anlegen (Default: kein Backup) |
-| `--out PATH` | Ergebnis nach PATH schreiben, Original unangetastet (nur bei einer Eingabedatei) |
-
-Beispiele:
+## 📦 Installation
 
 ```bash
-# Mehrere Stimmen auf einmal stempeln
-noten-stempel stimme1.pdf stimme2.pdf --nr 1234
-
-# fzf-Multiauswahl, Nummer interaktiv
-noten-stempel
-
-# Einzelne Datei separat ablegen
-noten-stempel stimme.pdf --nr 1234 --out gestempelt.pdf
-```
-
-### `noten-pdf-fix`
-
-Reparatur- und Aufräum-Werkzeug für einzelne oder mehrere PDFs. Operationen lassen sich kombinieren und werden in fester Reihenfolge angewendet: **Decrypt → Repair → No-Rotate → Compress**.
-
-```
-noten-pdf-fix [DATEI ...] [Flags]
-```
-
-Ohne Datei-Argumente öffnet sich `fzf` mit Mehrfachauswahl (TAB markiert, ENTER startet). Wird keine Operation gewählt, wird `--no-rotate` als Default ausgeführt (entspricht dem Verhalten des alten `pdf-fix.sh`).
-
-**Operationen**
-
-| Flag | Wirkung |
-|---|---|
-| `--decrypt` | Passwortgeschütztes PDF entschlüsseln (Passwort wird interaktiv abgefragt) |
-| `--repair` | PDF neu serialisieren — heilt kleinere Strukturfehler |
-| `--no-rotate` | `AutoRotatePages=/None` setzen, damit Viewer die Seiten nicht eigenmächtig drehen |
-| `--compress` | Mit Ghostscript komprimieren |
-| `--compress-level {screen,ebook,printer,prepress}` | Qualität beim Komprimieren (Default `printer`) |
-
-**Backup / Ausgabe**
-
-| Flag | Wirkung |
-|---|---|
-| _Default_ | Original wird direkt mit dem Ergebnis überschrieben (kein Backup) |
-| `--backup` | Vor Überschreiben `<datei>.pdf.bak` anlegen |
-| `--out PATH` | Schreibt das Ergebnis nach PATH, Original bleibt unangetastet (nur bei einer Eingabedatei) |
-
-Beispiele:
-
-```bash
-# fzf-Multiauswahl, Default = no-rotate, mit .bak-Backup
-noten-pdf-fix
-
-# Mehrere Dateien, repair + komprimieren mit "ebook"-Preset
-noten-pdf-fix scan1.pdf scan2.pdf --repair --compress --compress-level ebook
-
-# Verschlüsseltes PDF entschlüsseln und Ergebnis getrennt ablegen
-noten-pdf-fix geschuetzt.pdf --decrypt --out entsperrt.pdf
-```
-
-### `noten-tools-aliases`
-
-Verwaltung der gelernten Aliase aus interaktiven Sitzungen:
-
-```
-noten-tools-aliases list    # alle gelernten Aliase anzeigen
-noten-tools-aliases sync    # Vorschläge zur Repo-Aufnahme als YAML ausgeben (PR-fähig)
-noten-tools-aliases clear   # gelernte Aliase löschen
-```
-
-`sync` vergleicht `~/.config/noten-tools/learned_aliases.yaml` mit dem Repo-Mapping und schlägt Repo-fähige Ergänzungen vor — die Ausgabe lässt sich direkt in `data/instruments.yaml` einfügen und als PR vorschlagen.
-
-## Installation
-
-### Schnellinstallation (Linux & macOS)
-
-```bash
-git clone https://github.com/<dein-account>/noten-tools.git
+git clone https://github.com/janmw/noten-tools.git
 cd noten-tools
 ./install.sh
 ```
 
-`install.sh` erkennt automatisch die Distribution (Arch/CachyOS, Debian/Ubuntu, Fedora, macOS) und installiert die System-Abhängigkeiten (`tesseract` mit `deu`+`eng`-Sprachdaten, `poppler-utils`, `fzf`, `xdg-utils`, `ghostscript`) sowie das Python-Paket via `pipx`.
+Erkennt Arch/CachyOS, Debian/Ubuntu, Fedora und macOS automatisch und installiert System-Abhängigkeiten (`tesseract` + `deu`/`eng`, `poppler-utils`, `fzf`, `xdg-utils`, `ghostscript`) sowie das Python-Paket via `pipx`.
 
-### Manuell
+Details, manuelle Installation, Distro-spezifische Pakete: [docs/installation.md](docs/installation.md).
 
-System-Pakete:
-
-* **Arch / CachyOS**: `pacman -S tesseract tesseract-data-deu tesseract-data-eng poppler fzf xdg-utils ghostscript python-pipx`
-* **Ubuntu / Debian**: `apt-get install tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng poppler-utils fzf xdg-utils ghostscript pipx`
-* **Fedora**: `dnf install tesseract tesseract-langpack-deu tesseract-langpack-eng poppler-utils fzf xdg-utils ghostscript pipx`
-* **macOS** (Homebrew): `brew install tesseract tesseract-lang poppler fzf ghostscript pipx`
-
-Python-Paket:
+## 🚀 Schnellstart
 
 ```bash
-pipx install .
+# Notensatz in Einzel-Stimmen splitten + stempeln
+noten-verarbeitung scan.pdf
+
+# Logo + Archivnummer auf erste Seite einer fertigen Stimme stempeln
+noten-stempel stimme.pdf --nr 1234
+
+# PDF reparieren und gleichzeitig komprimieren
+noten-pdf-fix scan.pdf --repair --compress
 ```
 
-## Konfiguration
+Volle Workflow- und Flag-Doku jeweils in `docs/<befehl>.md`.
 
-Beim ersten Start werden Defaults nach `~/.config/noten-tools/config.yaml` geschrieben. Du kannst dort dauerhaft folgende Werte überschreiben:
+## ⚙️ Konfiguration
 
-* Stempel-Position (Logo + Archivnummer in pt vom Seitenrand)
-* Logo-Pfad und Schriftart-Pfad
-* OCR-Sprache, OCR-Confidence-Schwelle, OCR-DPI
-* Default für `a5` (true/false)
+Beim ersten Start wird `~/.config/noten-tools/config.yaml` mit Defaults angelegt. Dort lassen sich Stempel-Position, Logo-/Font-Pfad, OCR-Sprache und -Confidence dauerhaft überschreiben.
 
-Gelernte Aliase liegen in `~/.config/noten-tools/learned_aliases.yaml`. Logfiles in `~/.cache/noten-tools/logs/`.
+Details: [docs/configuration.md](docs/configuration.md).
 
-## Logo & Schriftart austauschen
+## 🛣️ Roadmap
 
-Standard-Logo: `assets/logo.png`. Standard-Schrift: `assets/00_stamp.ttf`.
+* `noten-unbooklet` — Booklet-Layout (Imposition) wieder in Einzelseiten zerlegen
 
-Zum Tauschen entweder:
+Entwicklungs-Setup (venv, editierbare Installation, lokale Tests): [docs/development.md](docs/development.md).
 
-* Datei im Repo direkt ersetzen (gilt für alle User des Repos), **oder**
-* In `~/.config/noten-tools/config.yaml` den `logo_path` / `font_path` auf eine eigene Datei setzen (gilt nur für dich), **oder**
-* Pro Aufruf `--logo /pfad/zum/logo.png` übergeben.
+## 📄 Lizenz
 
-## Repo-Struktur
-
-```
-noten-tools/
-├── bin/
-├── notentools/
-│   ├── shared/        # geteilte Bibliothek (config, logging, instruments, pdf_io, stamp, paths)
-│   ├── verarbeitung/  # noten-verarbeitung CLI
-│   ├── pdf_fix/       # noten-pdf-fix CLI
-│   ├── stempel/       # noten-stempel CLI
-│   └── aliases/       # noten-tools-aliases CLI
-├── data/instruments.yaml
-├── assets/{logo.png, 00_stamp.ttf}
-├── install.sh
-├── pyproject.toml
-└── README.md
-```
-
-## Geplante weitere Befehle
-
-* `noten-unbooklet` — Booklet-Layout auflösen
-
-## Entwicklung
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
-noten-verarbeitung --help
-```
-
-## Lizenz
-
-MIT.
+MIT — siehe [LICENSE](LICENSE).
