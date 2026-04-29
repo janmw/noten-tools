@@ -55,3 +55,7 @@ def default_logo() -> Path:
 
 def default_font() -> Path:
     return repo_root() / "assets" / "00_stamp.ttf"
+
+
+def default_mono_font() -> Path:
+    return repo_root() / "assets" / "JetBrainsMono-Regular.ttf"

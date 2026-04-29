@@ -14,6 +14,7 @@ Das Repo bündelt mehrere CLI-Befehle mit gemeinsamem Präfix `noten-`. Sie teil
 | `noten-stempel` | Logo + Archivnummer auf die erste Seite stempeln | [docs/noten-stempel.md](docs/noten-stempel.md) |
 | `noten-pdf-fix` | PDFs reparieren, entschlüsseln, komprimieren, Auto-Rotate stoppen | [docs/noten-pdf-fix.md](docs/noten-pdf-fix.md) |
 | `noten-booklet` | A3-Booklet-Scans in A4-Seiten in korrekter Reihenfolge auflösen | [docs/noten-booklet.md](docs/noten-booklet.md) |
+| `noten-ausgabe` | Kleinen Ausgabe-Stempel `[Name] - [Datum]` unten mittig auf jede Seite setzen | [docs/noten-ausgabe.md](docs/noten-ausgabe.md) |
 | `noten-tools-aliases` | Gelernte OCR-Aliase verwalten und ins Repo zurückspielen | [docs/noten-tools-aliases.md](docs/noten-tools-aliases.md) |
 
 ## 📦 Installation

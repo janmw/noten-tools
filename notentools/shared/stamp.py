@@ -1,6 +1,6 @@
-"""Stempel-Overlay: Logo links oben + Archivnummer rechts oben.
+"""Stempel-Overlay: Logo + Archivnummer (oben) und Fußzeilen-Stempel (unten).
 
-Wird über jede Seite einer PDF gelegt. Original-Inhalt bleibt unangetastet.
+Wird über die Seiten einer PDF gelegt. Original-Inhalt bleibt unangetastet.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-from .config import Config, StampPosition
+from .config import Config, FooterPosition, StampPosition
 
 MM_PER_PT = 72.0 / 25.4  # ≈ 2.835
 
@@ -119,6 +119,61 @@ def stamp_pdf(
             config.stamp,
             logo_offset_mm,
             archiv_offset_mm,
+        )
+        overlay_pdf = pikepdf.open(io.BytesIO(overlay_bytes))
+        out.pages[-1].add_overlay(overlay_pdf.pages[0])
+
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    out.save(str(dst))
+    src_pdf.close()
+
+
+def _build_footer_overlay(
+    page_width: float,
+    page_height: float,
+    text: str,
+    font_path: Path,
+    footer: FooterPosition,
+    offset_mm: tuple[float, float] = (0.0, 0.0),
+) -> bytes:
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=(page_width, page_height))
+    font_name = _ensure_font(font_path)
+    c.setFont(font_name, footer.font_size_pt)
+    c.setFillColor(black)
+    text_width = c.stringWidth(text, font_name, footer.font_size_pt)
+    text_x = (page_width - text_width) / 2 + _mm_to_pt(offset_mm[0])
+    text_y = footer.bottom_pt + _mm_to_pt(offset_mm[1])
+    c.drawString(text_x, text_y, text)
+    c.showPage()
+    c.save()
+    return buffer.getvalue()
+
+
+def stamp_footer(
+    src: Path,
+    dst: Path,
+    text: str,
+    config: Config,
+    offset_mm: tuple[float, float] = (0.0, 0.0),
+    font_path: Path | None = None,
+) -> None:
+    """Stempelt einen kleinen Text (Default 7 pt JetBrains Mono) unten mittig auf jede Seite.
+
+    offset_mm: (X = nach rechts, Y = nach oben) relativ zum Default
+    font_path: Override für Monospace-Font (sonst config.mono_font_path)
+    """
+    used_font = font_path if font_path is not None else Path(config.mono_font_path)
+
+    src_pdf = pikepdf.open(str(src))
+    out = pikepdf.Pdf.new()
+    for page in src_pdf.pages:
+        out.pages.append(page)
+        mediabox = page.mediabox
+        page_w = float(mediabox[2]) - float(mediabox[0])
+        page_h = float(mediabox[3]) - float(mediabox[1])
+        overlay_bytes = _build_footer_overlay(
+            page_w, page_h, text, used_font, config.footer, offset_mm,
         )
         overlay_pdf = pikepdf.open(io.BytesIO(overlay_bytes))
         out.pages[-1].add_overlay(overlay_pdf.pages[0])

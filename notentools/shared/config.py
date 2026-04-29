@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from .paths import config_file, default_logo, default_font
+from .paths import config_file, default_logo, default_font, default_mono_font
 
 
 @dataclass
@@ -24,6 +24,17 @@ class StampPosition:
 
 
 @dataclass
+class FooterPosition:
+    """Fußzeilen-Stempel (noten-ausgabe): unten mittig.
+
+    Default: 3 mm Abstand zwischen Text-Baseline und Seitenrand bei 7 pt Schrift.
+    """
+
+    bottom_pt: float = 8.5  # ≈ 3 mm
+    font_size_pt: float = 7.0
+
+
+@dataclass
 class Config:
     a5: bool = False
     stamp_enabled_default: bool = True
@@ -32,7 +43,10 @@ class Config:
     ocr_dpi: int = 300
     logo_path: str = ""
     font_path: str = ""
+    mono_font_path: str = ""
+    ausgabe_name: str = ""  # zuletzt verwendeter Name in noten-ausgabe (Default-Vorschlag)
     stamp: StampPosition = field(default_factory=StampPosition)
+    footer: FooterPosition = field(default_factory=FooterPosition)
 
     @classmethod
     def load(cls) -> "Config":
@@ -42,18 +56,24 @@ class Config:
             with path.open("r", encoding="utf-8") as fh:
                 data = yaml.safe_load(fh) or {}
             stamp_data = data.pop("stamp", {}) or {}
+            footer_data = data.pop("footer", {}) or {}
             for key, value in data.items():
                 if hasattr(cfg, key):
                     setattr(cfg, key, value)
             for key, value in stamp_data.items():
                 if hasattr(cfg.stamp, key):
                     setattr(cfg.stamp, key, value)
+            for key, value in footer_data.items():
+                if hasattr(cfg.footer, key):
+                    setattr(cfg.footer, key, value)
         # Defaults für nicht-gesetzte Pfade NACH dem File-Read,
         # damit leere Strings in der Config-Datei nicht den Default verdrängen.
         if not cfg.logo_path:
             cfg.logo_path = str(default_logo())
         if not cfg.font_path:
             cfg.font_path = str(default_font())
+        if not cfg.mono_font_path:
+            cfg.mono_font_path = str(default_mono_font())
         return cfg
 
     def save(self) -> None:
