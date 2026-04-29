@@ -1,7 +1,5 @@
 # 🎼 noten-tools
 
-> Werkzeuge für die digitale Notenarchiv-Verwaltung der Stadtkapelle.
-
 > **Hinweis:** Ich bin kein professioneller Entwickler, sondern Notenwart. Dieses Projekt ist mit Unterstützung von KI-Assistenten entstanden — Code-Qualität und Architektur können entsprechend Lücken haben. Bug-Reports und Verbesserungsvorschläge sind ausdrücklich willkommen.
 
 Das Repo bündelt mehrere CLI-Befehle mit gemeinsamem Präfix `noten-`. Sie teilen sich eine Python-Bibliothek (`notentools/shared`), ein Instrumenten-Mapping (`data/instruments.yaml`), Stempel-Assets (`assets/`) und eine User-Konfiguration unter `~/.config/noten-tools/`.
