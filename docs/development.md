@@ -17,6 +17,29 @@ Nach Code-Änderungen am eigenen Klon:
 pipx install --force .
 ```
 
+## Tests
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+Oder direkt im pipx-venv:
+
+```bash
+$(pipx environment --value PIPX_HOME)/venvs/noten-tools/bin/python -m pip install pytest
+$(pipx environment --value PIPX_HOME)/venvs/noten-tools/bin/python -m pytest
+```
+
+Abgedeckt sind:
+
+* `noten-booklet` — Reordering-Logik (`partitur_ordering`, `noten_ordering`) + Mediabox-Splitting
+* `notentools.shared.instruments` — Naming-Konvention (`_post_process`), `needs_pitch()`, `identify()` end-to-end
+* `notentools.verarbeitung.split` — `sanitize_filename`, `build_filename`, `build_folder_name`
+* `noten-tools-aliases` — Identifier-Pattern für `sync`
+
+OCR und interaktive Prompts sind bewusst nicht abgedeckt.
+
 ## Repo-Struktur
 
 ```
@@ -27,9 +50,11 @@ noten-tools/
 │   ├── verarbeitung/  # noten-verarbeitung CLI
 │   ├── pdf_fix/       # noten-pdf-fix CLI
 │   ├── stempel/       # noten-stempel CLI
+│   ├── booklet/       # noten-booklet CLI
 │   └── aliases/       # noten-tools-aliases CLI
 ├── data/instruments.yaml
 ├── assets/{logo.png, 00_stamp.ttf}
+├── tests/
 ├── install.sh
 ├── pyproject.toml
 └── README.md

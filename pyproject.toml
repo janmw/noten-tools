@@ -23,6 +23,11 @@ dependencies = [
     "platformdirs>=4.2",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+]
+
 [project.scripts]
 noten-verarbeitung = "notentools.verarbeitung.__main__:main"
 noten-tools-aliases = "notentools.aliases.__main__:main"
@@ -38,3 +43,6 @@ include = ["notentools*"]
 
 [tool.setuptools]
 include-package-data = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
