@@ -211,3 +211,63 @@ class TestIdentifyEndToEnd:
         ident = mapper.identify("Conductor's Score")
         assert ident is not None
         assert ident.code == "00"
+
+
+# ---------------------------------------------------------------------------
+# OCR-Robustheit: Großschreibung, Whitespace-Präfix und typische Fehlleseungen
+# ---------------------------------------------------------------------------
+
+
+class TestOcrRobustness:
+    """Regression-Schutz für die in der Praxis beobachteten OCR-Quirks:
+    vollständig groß geschriebene Stimmenbezeichnungen ('F HORN') und das
+    Verwechseln von 'rn' mit 'm' ('Hom' statt 'Horn')."""
+
+    def test_uppercase_f_horn_resolves_to_f_horn(self, mapper):
+        ident = mapper.identify("F HORN")
+        assert ident is not None
+        assert ident.code == "05"
+        assert ident.instrument == "F-Horn"
+        assert ident.needs_pitch() is False
+
+    def test_titlecase_f_horn_resolves_to_f_horn(self, mapper):
+        ident = mapper.identify("F Horn")
+        assert ident is not None
+        assert ident.instrument == "F-Horn"
+
+    def test_uppercase_es_klarinette(self, mapper):
+        ident = mapper.identify("ES KLARINETTE")
+        assert ident is not None
+        assert ident.instrument == "Es-Klarinette"
+
+    def test_uppercase_b_posaune(self, mapper):
+        ident = mapper.identify("B POSAUNE")
+        assert ident is not None
+        assert ident.instrument == "B-Posaune"
+
+    def test_ocr_hom_is_horn(self, mapper):
+        ident = mapper.identify("Hom")
+        assert ident is not None
+        assert ident.code == "05"
+        assert ident.instrument == "Horn"
+
+    def test_ocr_f_hom_is_f_horn(self, mapper):
+        # Kombiniert: Großschreibung + 'rn'→'m'
+        ident = mapper.identify("F HOM")
+        assert ident is not None
+        assert ident.instrument == "F-Horn"
+
+    def test_bb_trumpet_uppercase_keeps_default(self, mapper):
+        # Stimmungs-Präfix ohne Bindestrich darf Default nicht brechen
+        ident = mapper.identify("BB TRUMPET")
+        assert ident is not None
+        assert ident.code == "06"
+        assert ident.instrument == "Trompete"
+        assert ident.zusatz == ""
+
+    def test_plain_fagott_not_misread_as_pitch(self, mapper):
+        # Sicherstellen: 'fagott' wird NICHT als 'f' + 'agott' geparst
+        ident = mapper.identify("Fagott")
+        assert ident is not None
+        assert ident.code == "02"
+        assert ident.instrument == "Fagott"

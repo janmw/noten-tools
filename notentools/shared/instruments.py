@@ -281,8 +281,10 @@ class InstrumentMapper:
         if m and not zusatz:
             zusatz = "in " + _KEY_NORMAL.get(m.group(1), m.group(1).upper()).split()[-1]
             text = text[: m.start()] + " " + text[m.end():]
-        # Präfix-Stimmung: "f-horn", "es-klarinette", "b-posaune"
-        m = re.match(r"^\s*(es|eb|bb|f|b|c|a|d)\s*-\s*(\S.*)$", text)
+        # Präfix-Stimmung: "f-horn", "es-klarinette", "b-posaune" — auch mit
+        # Leerzeichen als Trenner ("F HORN", "ES KLARINETTE"), wie es bei
+        # vollständig groß geschriebenen Stimmenbezeichnungen vorkommt.
+        m = re.match(r"^\s*(es|eb|bb|f|b|c|a|d)(?:\s*-\s*|\s+)(\S.*)$", text)
         if m:
             if not zusatz:
                 pitch_token = m.group(1)

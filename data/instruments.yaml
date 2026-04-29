@@ -198,6 +198,9 @@
       - f horn
       - horn in es
       - horn in eb
+      # Häufige OCR-Verwechslungen: "rn"→"m", "o"→"ö"
+      - hom
+      - hörn
 
 "06":
   Trompete:

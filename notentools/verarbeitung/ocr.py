@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import pytesseract
 from PIL import Image, ImageChops
 
 
@@ -24,6 +23,7 @@ class HeaderRead:
 
 
 def _ocr_region(image: Image.Image, lang: str) -> list[dict]:
+    import pytesseract  # deferred: pure-Bild-Helfer dieses Moduls sollen ohne Tesseract testbar bleiben
     data = pytesseract.image_to_data(image, lang=lang, output_type=pytesseract.Output.DICT)
     rows: list[dict] = []
     n = len(data["text"])
@@ -89,20 +89,23 @@ def _aggregate_blocks(rows: list[dict]) -> list[dict]:
     return out
 
 
-def _filter_red(image: Image.Image) -> Image.Image:
-    """Setzt rote Pixel auf Weiß. Schützt davor, dass der rote Archivstempel
-    als Stimmenbezeichnung gelesen wird — die Stimme ist immer in Schwarz/Grau.
+def _filter_color_stamps(image: Image.Image) -> Image.Image:
+    """Setzt farbige Pixel auf Weiß. Schützt davor, dass farbige Archivstempel
+    (rot, blau, …) als Stimmenbezeichnung gelesen werden — die Stimme selbst
+    ist immer in Schwarz/Grau gedruckt, hat also keine Sättigung.
+
+    Kriterium: max(R,G,B) − min(R,G,B) > Schwellwert. Schwarz und Grau erfüllen
+    das nicht (alle Kanäle gleich) und bleiben erhalten.
     """
     img = image.convert("RGB")
     r, g, b = img.split()
-    diff_rg = ImageChops.subtract(r, g)
-    diff_rb = ImageChops.subtract(r, b)
+    max_rgb = ImageChops.lighter(ImageChops.lighter(r, g), b)
+    min_rgb = ImageChops.darker(ImageChops.darker(r, g), b)
+    chroma = ImageChops.subtract(max_rgb, min_rgb)
     threshold = 30
-    mask_rg = diff_rg.point(lambda v: 255 if v > threshold else 0).convert("L")
-    mask_rb = diff_rb.point(lambda v: 255 if v > threshold else 0).convert("L")
-    mask_red = ImageChops.multiply(mask_rg, mask_rb)
+    mask_color = chroma.point(lambda v: 255 if v > threshold else 0).convert("L")
     white = Image.new("RGB", img.size, (255, 255, 255))
-    return Image.composite(white, img, mask_red)
+    return Image.composite(white, img, mask_color)
 
 
 def read_header(image: Image.Image, lang: str = "deu+eng") -> HeaderRead:
@@ -111,7 +114,7 @@ def read_header(image: Image.Image, lang: str = "deu+eng") -> HeaderRead:
     Erwartetes Layout: Stimme oben links als eigener Textblock,
     Titel oben mittig (groß), Komponist/Arrangeur oben rechts.
     """
-    image = _filter_red(image)
+    image = _filter_color_stamps(image)
     img_w, img_h = image.size
     rows = _ocr_region(image, lang=lang)
     blocks = _aggregate_blocks(rows)
