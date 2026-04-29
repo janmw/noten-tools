@@ -40,6 +40,16 @@ Abgedeckt sind:
 
 OCR und interaktive Prompts sind bewusst nicht abgedeckt.
 
+## Doku lokal bauen
+
+Die Doku im `docs/`-Verzeichnis wird mit [MkDocs](https://www.mkdocs.org/) und dem [Catppuccin-Theme](https://github.com/catppuccin/mkdocs) gerendert.
+
+```bash
+pip install -e ".[docs]"
+mkdocs serve   # Live-Preview auf http://127.0.0.1:8000
+mkdocs build   # statische Site nach site/
+```
+
 ## Repo-Struktur
 
 ```

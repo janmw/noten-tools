@@ -7,8 +7,12 @@ __pycache__/
 build/
 dist/
 .venv/
+.venv-mkdocs/
 venv/
 .env
+
+# mkdocs Build-Output
+/site/
 
 # Editor
 .vscode/

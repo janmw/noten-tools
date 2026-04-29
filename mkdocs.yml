@@ -1,0 +1,78 @@
+site_name: noten-tools
+site_description: CLI-Tools für die Notenwart-Arbeit
+repo_url: https://github.com/janmw/noten-tools
+repo_name: janmw/noten-tools
+edit_uri: edit/main/docs/
+
+theme:
+  name: catppuccin
+  language: de
+  palette:
+    - scheme: macchiato
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-partly-cloudy
+        name: Wechsel zu Mocha
+    - scheme: mocha
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Wechsel zu Latte
+    - scheme: latte
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Wechsel zu Frappé
+    - scheme: frappe
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-cloudy
+        name: Wechsel zu Macchiato
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.footer
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+extra_css:
+  - stylesheets/catppuccin.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+nav:
+  - Start: index.md
+  - Installation: installation.md
+  - Konfiguration: configuration.md
+  - Befehle:
+    - noten-verarbeitung: noten-verarbeitung.md
+    - noten-stempel: noten-stempel.md
+    - noten-pdf-fix: noten-pdf-fix.md
+    - noten-booklet: noten-booklet.md
+    - noten-ausgabe: noten-ausgabe.md
+    - noten-tools-aliases: noten-tools-aliases.md
+  - Entwicklung: development.md
