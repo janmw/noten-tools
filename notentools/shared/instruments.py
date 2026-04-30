@@ -187,7 +187,7 @@ class InstrumentMapper:
     def _post_process(self, ident: Identification) -> Identification:
         """Wendet Naming-Sonderregeln nach erfolgter Identifikation an.
 
-        Regeln (laut Stadtkapelle-Konvention):
+        Regeln (Naming-Konvention):
           * Saxophone (04) und Schlagwerk (10): Stimmung wird nicht im Namen geführt.
           * Horn (05): Stimmung verschmilzt zum Präfix ("F-Horn", "Es-Horn"). Ohne
             erkannte Stimmung bleibt "Horn" und needs_pitch() liefert True.

@@ -1,6 +1,6 @@
 """Tests für die Naming-Konventionen aus _post_process und needs_pitch.
 
-Deckt die Stadtkapelle-Regeln ab:
+Deckt die Naming-Regeln ab:
   - Klarinette in B → Default, in Es → "Es-Klarinette"
   - Posaune in C → Default, in B → "B-Posaune"
   - Horn → "F-Horn", "Es-Horn" verschmolzen

@@ -8,7 +8,7 @@
 
 # noten-tools
 
-CLI-Tools für die digitale Notenarchiv-Verwaltung der Stadtkapelle.
+CLI-Tools für die digitale Notenarchiv-Verwaltung im sinfonischen Blasorchester.
 
 </div>
 

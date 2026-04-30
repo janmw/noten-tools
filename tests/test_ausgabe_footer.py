@@ -24,8 +24,8 @@ class TestParser:
         assert ns.datum is None
 
     def test_with_name_and_datum(self):
-        ns = build_parser().parse_args(["a.pdf", "--name", "Jan W.", "--datum", "29.04.2026"])
-        assert ns.name == "Jan W."
+        ns = build_parser().parse_args(["a.pdf", "--name", "Max M.", "--datum", "29.04.2026"])
+        assert ns.name == "Max M."
         assert ns.datum == "29.04.2026"
 
     def test_offset(self):
@@ -64,13 +64,13 @@ class TestStampFooterSmoke:
     def test_stamp_footer_keeps_page_count(self, synthetic_a4_pdf, tmp_path):
         out = tmp_path / "out.pdf"
         cfg = Config.load()
-        stamp_footer(synthetic_a4_pdf, out, text="Jan W. - 29.04.2026", config=cfg)
+        stamp_footer(synthetic_a4_pdf, out, text="Max M. - 29.04.2026", config=cfg)
         assert len(PdfReader(str(out)).pages) == 3
 
     def test_stamp_footer_does_not_change_mediabox(self, synthetic_a4_pdf, tmp_path):
         out = tmp_path / "out.pdf"
         cfg = Config.load()
-        stamp_footer(synthetic_a4_pdf, out, text="Jan W. - 29.04.2026", config=cfg)
+        stamp_footer(synthetic_a4_pdf, out, text="Max M. - 29.04.2026", config=cfg)
         src = PdfReader(str(synthetic_a4_pdf))
         dst = PdfReader(str(out))
         for s, d in zip(src.pages, dst.pages):
@@ -81,5 +81,5 @@ class TestStampFooterSmoke:
         # Overlay sollte mind. ein paar Bytes hinzufügen
         out = tmp_path / "out.pdf"
         cfg = Config.load()
-        stamp_footer(synthetic_a4_pdf, out, text="Jan W. - 29.04.2026", config=cfg)
+        stamp_footer(synthetic_a4_pdf, out, text="Max M. - 29.04.2026", config=cfg)
         assert out.stat().st_size > synthetic_a4_pdf.stat().st_size

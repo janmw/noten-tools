@@ -35,10 +35,10 @@ noten-ausgabe [PDF...] [Flags]
 noten-ausgabe stimme.pdf
 
 # Mehrere Dateien direkt mit Name + Datum
-noten-ausgabe *.pdf --name "Jan W." --datum "29.04.2026"
+noten-ausgabe *.pdf --name "Max M." --datum "29.04.2026"
 
 # fzf-Mehrfachauswahl
-noten-ausgabe --name "Jan W."
+noten-ausgabe --name "Max M."
 
 # Mit Backup
 noten-ausgabe stimme.pdf --backup
@@ -55,7 +55,7 @@ noten-ausgabe stimme.pdf --offset 0,2
 In `~/.config/noten-tools/config.yaml`:
 
 ```yaml
-ausgabe_name: "Jan W."     # zuletzt verwendeter Name (automatisch gepflegt)
+ausgabe_name: "Max M."     # zuletzt verwendeter Name (automatisch gepflegt)
 mono_font_path: ""          # leer = JetBrains Mono aus assets/
 footer:
   bottom_pt: 8.5            # Abstand Baseline → unterer Rand (≈ 3 mm)

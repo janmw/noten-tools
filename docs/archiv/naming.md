@@ -17,7 +17,7 @@ Beispiele:
 
 ## Stimmungs-Regeln
 
-Stimmung wird im Dateinamen nur dann mitgeführt, wenn sie *nicht* der für die Stadtkapelle üblichen entspricht. So bleibt der Standardfall kurz; Abweichungen fallen sofort auf.
+Stimmung wird im Dateinamen nur dann mitgeführt, wenn sie *nicht* der im Verein üblichen entspricht. So bleibt der Standardfall kurz; Abweichungen fallen sofort auf.
 
 | Instrument | Standard (kein Zusatz) | Sonderfall im Namen |
 |---|---|---|

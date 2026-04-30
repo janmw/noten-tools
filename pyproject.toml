@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "noten-tools"
 version = "0.1.0"
-description = "Werkzeuge für die digitale Notenarchiv-Verwaltung der Stadtkapelle"
+description = "Werkzeuge für die digitale Notenarchiv-Verwaltung im sinfonischen Blasorchester"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
