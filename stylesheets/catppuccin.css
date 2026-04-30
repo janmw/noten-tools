@@ -976,3 +976,15 @@
   background-color: transparent;
   border-radius: 0 0 0.2rem 0.2rem;
 }
+
+/* ========================================
+   Logo (theme-aware)
+   ======================================== */
+
+/* Default: dark themes show the light logo */
+.md-header__button.md-logo .logo-light { display: inline-block; }
+.md-header__button.md-logo .logo-dark  { display: none; }
+
+/* Latte (light theme): show the dark logo */
+[data-md-color-scheme="latte"] .md-header__button.md-logo .logo-light { display: none; }
+[data-md-color-scheme="latte"] .md-header__button.md-logo .logo-dark  { display: inline-block; }
