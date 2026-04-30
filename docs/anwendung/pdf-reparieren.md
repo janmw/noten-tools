@@ -1,4 +1,6 @@
-# `noten-pdf-fix`
+# PDFs reparieren
+
+Befehl: `noten-pdf-fix`
 
 Repariert, entschlüsselt, komprimiert PDFs und stoppt Auto-Rotate in Viewern. Operationen sind kombinierbar und werden in fester Reihenfolge angewendet:
 
@@ -15,9 +17,7 @@ noten-pdf-fix [PDF...] [Flags]
 
 ## Workflow
 
-1. PDF-Auswahl:
-   * Eine oder mehrere Dateien als Argumente, **oder**
-   * ohne Argumente: `fzf`-Mehrfachauswahl im aktuellen Verzeichnis (TAB markieren, ENTER startet).
+1. PDF-Auswahl: eine oder mehrere Dateien als Argumente, oder ohne Argumente per `fzf`-Mehrfachauswahl (TAB markieren, ENTER startet).
 2. Bei `--decrypt`: Passwort-Prompt pro Datei (gecached für gleiche Eingabedateien).
 3. Pipeline läuft in einem temporären Verzeichnis, jede Operation produziert eine Zwischendatei.
 4. Standardmäßig wird das Original überschrieben. Mit `--backup` wird vorher `<datei>.pdf.bak` daneben angelegt; mit `--out PATH` (nur bei einer einzelnen Datei) bleibt das Original unangetastet.
@@ -68,4 +68,4 @@ noten-pdf-fix scan.pdf --compress --out scan-klein.pdf
 
 ## Voraussetzungen
 
-`--no-rotate` und `--compress` benötigen `ghostscript` (`gs`). Wird über `install.sh` automatisch mitinstalliert; bei manueller Installation siehe [installation.md](installation.md).
+`--no-rotate` und `--compress` benötigen `ghostscript` (`gs`). Wird über `install.sh` automatisch mitinstalliert; bei manueller Installation siehe [Installation](../loslegen/installation.md).

@@ -1,4 +1,6 @@
-# `noten-booklet`
+# Booklets auflösen
+
+Befehl: `noten-booklet`
 
 Löst A3-Booklet-Scans in A4-Seiten in korrekter Lesereihenfolge auf. Erwartet pro A3-Blatt zwei aufeinanderfolgende Eingabe-Seiten (Vorderseite, Rückseite).
 
@@ -16,9 +18,11 @@ noten-booklet noten    [PDF] [Flags]
 
 ## Eingabe-Voraussetzungen
 
-* Eingabe-PDF hat eine **gerade Anzahl Seiten** (Vorder- und Rückseite jedes A3-Blatts).
-* Eingabe-Seiten sollten landscape A3 sein (oder zumindest doppelt so breit wie hoch — die Mitte wird halbiert).
-* Bei rotiertem Scan vorher `noten-pdf-fix --no-rotate` laufen lassen.
+- Eingabe-PDF hat eine **gerade Anzahl Seiten** (Vorder- und Rückseite jedes A3-Blatts).
+- Eingabe-Seiten sollten landscape A3 sein (oder zumindest doppelt so breit wie hoch — die Mitte wird halbiert).
+
+!!! warning "Bei rotierten Scans"
+    Wenn die Scans im Viewer falsch herum stehen, vorher [`noten-pdf-fix --no-rotate`](pdf-reparieren.md) laufen lassen.
 
 ## Modus `partitur`
 
@@ -51,8 +55,6 @@ Standardmäßig fragt das Tool pro Blatt:
 Blatt 1/8 > [ENTER für Booklet, f für fortlaufend, v für Vorschau, q zum Abbrechen]
 ```
 
-Tasten:
-
 | Eingabe | Wirkung |
 |---|---|
 | `ENTER` oder `b` | Aktuelles Blatt als Booklet markieren |
@@ -61,7 +63,7 @@ Tasten:
 | `z` | Ein Blatt zurückspringen |
 | `q` | Abbrechen |
 
-Wenn schon vorher klar ist, dass alle Blätter gleich sind, lässt sich die Frage überspringen:
+Wenn schon vorher klar ist, dass alle Blätter gleich sind:
 
 ```bash
 noten-booklet noten scan.pdf --all-booklet
@@ -102,7 +104,7 @@ noten-booklet partitur
 
 ## Pipeline-Tipp
 
-`noten-booklet` produziert eine A4-PDF mit Stimmen oder Partitur in korrekter Reihenfolge — danach kann direkt `noten-verarbeitung` darauf angewandt werden, um die Stimmen einzeln zu trennen und zu stempeln.
+`noten-booklet` produziert eine A4-PDF mit Stimmen oder Partitur in korrekter Reihenfolge — danach kann direkt [`noten-verarbeitung`](notensatz.md) darauf angewandt werden.
 
 ```bash
 noten-booklet noten scan.pdf --all-continuous

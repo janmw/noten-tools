@@ -1,54 +1,78 @@
-# 🎼 noten-tools
+# noten-tools
 
-> **Hinweis:** Ich bin kein professioneller Entwickler, sondern Notenwart. Dieses Projekt ist mit Unterstützung von KI-Assistenten entstanden — Code-Qualität und Architektur können entsprechend Lücken haben. Bug-Reports und Verbesserungsvorschläge sind ausdrücklich willkommen.
+CLI-Tools für die Notenwart-Arbeit: gescannte Notensätze in einzelne Stimmen splitten, mit Logo + Archivnummer stempeln, A3-Booklet-Scans auflösen, PDFs reparieren und kleine Ausgabe-Vermerke setzen.
 
-Das Repo bündelt mehrere CLI-Befehle mit gemeinsamem Präfix `noten-`. Sie teilen sich eine Python-Bibliothek (`notentools/shared`), ein Instrumenten-Mapping (`data/instruments.yaml`), Stempel-Assets (`assets/`) und eine User-Konfiguration unter `~/.config/noten-tools/`.
+!!! note "Hinweis"
+    Ich bin kein professioneller Entwickler, sondern Notenwart. Dieses Projekt ist mit Unterstützung von KI-Assistenten entstanden — Code-Qualität und Architektur können entsprechend Lücken haben. Bug-Reports und Verbesserungsvorschläge sind ausdrücklich willkommen.
 
-## ✨ Übersicht
+## Was möchtest du tun?
 
-| Befehl | Was er macht |
-|---|---|
-| [`noten-verarbeitung`](noten-verarbeitung.md) | Notensatz-PDF in einzelne Stimmen splitten, skalieren, stempeln |
-| [`noten-stempel`](noten-stempel.md) | Logo + Archivnummer auf die erste Seite stempeln |
-| [`noten-pdf-fix`](noten-pdf-fix.md) | PDFs reparieren, entschlüsseln, komprimieren, Auto-Rotate stoppen |
-| [`noten-booklet`](noten-booklet.md) | A3-Booklet-Scans in A4-Seiten in korrekter Reihenfolge auflösen |
-| [`noten-ausgabe`](noten-ausgabe.md) | Kleinen Ausgabe-Stempel `[Name] - [Datum]` unten mittig auf jede Seite setzen |
-| [`noten-tools-aliases`](noten-tools-aliases.md) | Gelernte OCR-Aliase verwalten und ins Repo zurückspielen |
+<div class="grid cards" markdown>
 
-## 📦 Installation
+-   :material-file-music-outline: __Notensatz aufbereiten__
 
-```bash
-git clone https://github.com/janmw/noten-tools.git
-cd noten-tools
-./install.sh
-```
+    ---
 
-Erkennt Arch/CachyOS, Debian/Ubuntu, Fedora und macOS automatisch und installiert System-Abhängigkeiten (`tesseract` + `deu`/`eng`, `poppler-utils`, `fzf`, `xdg-utils`, `ghostscript`) sowie das Python-Paket via `pipx`.
+    Gescannten Notensatz in einzelne Stimmen splitten, auf A4 skalieren und mit Logo + Archivnummer stempeln.
 
-Details, manuelle Installation, Distro-spezifische Pakete: [Installation](installation.md).
+    [:octicons-arrow-right-24: Anleitung](anwendung/notensatz.md)
 
-## 🚀 Schnellstart
+-   :material-book-open-variant: __Booklet-Scan auflösen__
 
-```bash
-# Notensatz in Einzel-Stimmen splitten + stempeln
-noten-verarbeitung scan.pdf
+    ---
 
-# Logo + Archivnummer auf erste Seite einer fertigen Stimme stempeln
-noten-stempel stimme.pdf --nr 1234
+    A3-Booklet-Scans (Vorder- und Rückseiten) in A4 in der richtigen Lesereihenfolge zerlegen.
 
-# PDF reparieren und gleichzeitig komprimieren
-noten-pdf-fix scan.pdf --repair --compress
+    [:octicons-arrow-right-24: Anleitung](anwendung/booklets.md)
 
-# A3-Booklet-Scan einer Partitur zu A4 in richtiger Reihenfolge auflösen
-noten-booklet partitur scan.pdf
-```
+-   :material-tools: __PDF reparieren__
 
-## ⚙️ Konfiguration
+    ---
 
-Beim ersten Start wird `~/.config/noten-tools/config.yaml` mit Defaults angelegt. Dort lassen sich Stempel-Position, Logo-/Font-Pfad, OCR-Sprache und -Confidence dauerhaft überschreiben.
+    PDFs entschlüsseln, Strukturfehler heilen, komprimieren und Auto-Rotate in Viewern stoppen.
 
-Details: [Konfiguration](configuration.md).
+    [:octicons-arrow-right-24: Anleitung](anwendung/pdf-reparieren.md)
 
-## 📄 Lizenz
+-   :material-stamper: __Stimmen stempeln__
+
+    ---
+
+    Logo + Archivnummer nachträglich auf die erste Seite einer fertigen Stimme bringen.
+
+    [:octicons-arrow-right-24: Anleitung](anwendung/stempeln.md)
+
+-   :material-account-edit-outline: __Ausgabe-Vermerk setzen__
+
+    ---
+
+    Kleinen Stempel `[Name] - [Datum]` unten mittig auf jede Seite, wenn Noten ausgegeben werden.
+
+    [:octicons-arrow-right-24: Anleitung](anwendung/ausgabe.md)
+
+-   :material-rocket-launch: __Erste Schritte__
+
+    ---
+
+    Du bist neu hier? Geführtes Tutorial vom Scan bis zu fertigen, gestempelten Stimmen-PDFs.
+
+    [:octicons-arrow-right-24: Tutorial](loslegen/erste-schritte.md)
+
+</div>
+
+## Wegweiser durch die Doku
+
+[**Loslegen**](loslegen/index.md)
+:   Installation auf Linux/macOS, Konfigurationsdatei, geführtes Erste-Schritte-Tutorial.
+
+[**Anwendung**](anwendung/index.md)
+:   Workflow-Übersicht und aufgabenorientierte Anleitungen für jeden der sechs Befehle.
+
+[**Notenarchiv aufbauen**](archiv/index.md)
+:   Konventionen und Empfehlungen rund ums digitale Archiv: Archivnummern, Instrumenten-Codes, Naming, Ordnerstruktur, Scannen, Backup. Tool-unabhängig.
+
+[**Entwicklung**](entwicklung/index.md)
+:   Für Beitragende: editierbare Installation, Tests, Doku lokal bauen, Repo-Struktur.
+
+## Lizenz
 
 MIT — siehe [LICENSE](https://github.com/janmw/noten-tools/blob/main/LICENSE).

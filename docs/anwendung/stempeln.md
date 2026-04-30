@@ -1,4 +1,6 @@
-# `noten-stempel`
+# Stimmen stempeln
+
+Befehl: `noten-stempel`
 
 Stempelt Logo + Archivnummer auf die **erste Seite** einer oder mehrerer fertiger Stimmen-PDFs. Kein OCR, kein Splitting, keine Skalierung — nur das Stempel-Overlay.
 
@@ -8,9 +10,7 @@ noten-stempel [PDF...] [Flags]
 
 ## Workflow
 
-1. PDF-Auswahl:
-   * Eine oder mehrere Dateien als Argumente, **oder**
-   * ohne Argumente: `fzf`-Mehrfachauswahl im aktuellen Verzeichnis (TAB markieren, ENTER startet).
+1. PDF-Auswahl: eine oder mehrere Dateien als Argumente, oder ohne Argumente per `fzf`-Mehrfachauswahl (TAB markieren, ENTER startet).
 2. Archivnummer (4-stellig) wird einmal abgefragt — alle ausgewählten PDFs bekommen die **gleiche** Nummer. Alternativ direkt per `--nr 1234`.
 3. Pro Datei wird die erste Seite mit Logo (oben links) und `Nr. XXXX` (oben rechts) versehen.
 4. Standardmäßig wird das Original überschrieben. Mit `--backup` wird vorher `<datei>.pdf.bak` daneben angelegt; mit `--out PATH` (nur bei einer einzelnen Datei) bleibt das Original unangetastet.
@@ -48,3 +48,6 @@ noten-stempel stimme.pdf --nr 1234 --out gestempelt.pdf
 # Logo etwas nach rechts und unten verschieben
 noten-stempel stimme.pdf --nr 1234 --logo-offset 3,2
 ```
+
+!!! tip "Wann lieber `noten-verarbeitung`?"
+    `noten-stempel` ist für **fertige** Einzelstimmen gedacht, die aus anderen Quellen kommen oder bei denen sich nur die Archivnummer geändert hat. Beim erstmaligen Aufbereiten eines kompletten Notensatzes ist [`noten-verarbeitung`](notensatz.md) der richtige Einstieg, da dort Splitting und Stempeln in einem Rutsch passieren.

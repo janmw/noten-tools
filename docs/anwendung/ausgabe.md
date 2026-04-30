@@ -1,4 +1,6 @@
-# `noten-ausgabe`
+# Ausgabe-Vermerk
+
+Befehl: `noten-ausgabe`
 
 Stempelt einen kleinen Ausgabe-Vermerk `[Name] - [Datum]` in 7 pt JetBrains Mono unten mittig auf **jede Seite** einer oder mehrerer PDFs.
 
@@ -8,9 +10,7 @@ noten-ausgabe [PDF...] [Flags]
 
 ## Workflow
 
-1. PDF-Auswahl:
-   * Eine oder mehrere Dateien als Argumente, **oder**
-   * ohne Argumente: `fzf`-Mehrfachauswahl im aktuellen Verzeichnis (TAB markieren, ENTER startet).
+1. PDF-Auswahl: eine oder mehrere Dateien als Argumente, oder ohne Argumente per `fzf`-Mehrfachauswahl (TAB markieren, ENTER startet).
 2. Name interaktiv abfragen — der zuletzt verwendete Name wird in `~/.config/noten-tools/config.yaml` (`ausgabe_name`) gecached und als Default-Vorschlag angezeigt. Mit `--name "..."` direkt setzen.
 3. Datum: heute im deutschen Format `TT.MM.JJJJ`. Mit `--datum "..."` einen beliebigen String wörtlich stempeln.
 4. Pro Datei wird auf jeder Seite der Text mittig unten platziert (≈ 3 mm Abstand zum unteren Rand).
@@ -61,3 +61,5 @@ footer:
   bottom_pt: 8.5            # Abstand Baseline → unterer Rand (≈ 3 mm)
   font_size_pt: 7.0
 ```
+
+→ Vollständige Übersicht: [Konfiguration](../loslegen/konfiguration.md).

@@ -1,8 +1,10 @@
-# `noten-tools-aliases`
+# OCR-Aliase pflegen
+
+Befehl: `noten-tools-aliases`
 
 Verwaltet die gelernten OCR-Aliase (`~/.config/noten-tools/learned_aliases.yaml`) und schlägt sie zur Aufnahme ins Repo (`data/instruments.yaml`) vor.
 
-`noten-verarbeitung` lernt OCR-Lesungen, die nicht direkt einem Instrument zugeordnet werden konnten, automatisch in die User-Datei. Mit diesem Tool lassen sich diese Einträge anzeigen, wieder löschen oder als YAML-Patch zur dauerhaften Aufnahme ins Repo ausgeben.
+[`noten-verarbeitung`](notensatz.md) lernt OCR-Lesungen, die nicht direkt einem Instrument zugeordnet werden konnten, automatisch in die User-Datei. Mit diesem Tool lassen sich diese Einträge anzeigen, wieder löschen oder als YAML-Patch zur dauerhaften Aufnahme ins Repo ausgeben.
 
 ```
 noten-tools-aliases <subcommand>
@@ -33,8 +35,8 @@ noten-tools-aliases clear
 
 `sync` prüft jeden Eintrag in `learned_aliases.yaml`:
 
-* Wenn der gelernte Identifier (z. B. `03 Klarinette 2 in B`) zu einem im Repo existierenden Instrument passt und der Roh-Text dort noch nicht als Alias eingetragen ist, wird er als Vorschlag ausgegeben.
-* Einträge, die zu keinem bekannten Repo-Instrument passen, werden am Ende als Hinweis aufgelistet (z. B. unbekannte Stimmen, die manuell in `instruments.yaml` ergänzt werden müssen).
+- Wenn der gelernte Identifier (z. B. `03 Klarinette 2 in B`) zu einem im Repo existierenden Instrument passt und der Roh-Text dort noch nicht als Alias eingetragen ist, wird er als Vorschlag ausgegeben.
+- Einträge, die zu keinem bekannten Repo-Instrument passen, werden am Ende als Hinweis aufgelistet (z. B. unbekannte Stimmen, die manuell in `instruments.yaml` ergänzt werden müssen).
 
 Die Ausgabe ist gültiges YAML, gruppiert nach Code und Instrument:
 
