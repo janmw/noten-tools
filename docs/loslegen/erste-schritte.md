@@ -33,7 +33,7 @@ noten-verarbeitung scan.pdf
 
 Du wirst dann gefragt:
 
-1. **Archivnummer** (4-stellig, z. B. `1234`)
+1. **Archivnummer** (Ziffern, z. B. `1234`)
 2. **Titel** (z. B. `Bahnfrei-Polka`)
 3. **Stempeln?** (`j`/`n`)
 

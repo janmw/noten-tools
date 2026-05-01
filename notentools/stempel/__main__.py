@@ -42,7 +42,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("files", nargs="*", type=Path,
                    help="PDF(s) direkt angeben (sonst fzf-Mehrfachauswahl).")
     p.add_argument("--nr", type=str, default=None,
-                   help="Archivnummer (4-stellig). Ohne Flag: interaktiver Prompt.")
+                   help="Archivnummer (Ziffern). Ohne Flag: interaktiver Prompt.")
     p.add_argument("--logo", type=Path,
                    help="Alternatives Logo (überschreibt Default aus Config).")
     p.add_argument("--logo-offset", type=_parse_offset, default=(0.0, 0.0),
@@ -82,8 +82,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.nr is not None:
         nr = args.nr.strip()
-        if len(nr) != 4 or not nr.isdigit():
-            log.error("--nr muss exakt 4 Ziffern sein.")
+        if not nr or not nr.isdigit():
+            log.error("--nr muss aus Ziffern bestehen.")
             return 2
         archivnummer = nr
     else:

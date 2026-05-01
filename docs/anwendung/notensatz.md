@@ -11,7 +11,7 @@ noten-verarbeitung [PDF] [Flags]
 ## Workflow
 
 1. PDF aus dem aktuellen Verzeichnis per `fzf` auswählen (oder als Argument übergeben).
-2. Eingabe: 4-stellige Archivnummer + Titel + Stempeln (`j`/`n`).
+2. Eingabe: Archivnummer + Titel + Stempeln (`j`/`n`).
 3. OCR pro Seite (Tesseract `deu+eng`) auf den oberen 30 % der Seite. Rote Pixel werden vor der Erkennung gefiltert, damit ein roter Archivstempel nicht als Stimmenbezeichnung gelesen wird.
 4. Eine neue Stimme beginnt, wenn alle drei Header-Blöcke gleichzeitig erkannt werden:
     * Titel mittig oben (groß)

@@ -2,7 +2,7 @@
 
 ## Archivnummer
 
-Jeder Notensatz bekommt eine **4-stellige Archivnummer** (`0000`–`9999`). Sie ist die einzige Identität des Notensatzes; Titel können sich ändern (Schreibweise, Umlaute, Sonderzeichen), die Nummer bleibt.
+Jeder Notensatz bekommt eine **numerische Archivnummer**. Sie ist die einzige Identität des Notensatzes; Titel können sich ändern (Schreibweise, Umlaute, Sonderzeichen), die Nummer bleibt. Die Länge ist nicht festgelegt — viele Archive nutzen 4-stellige Nummern (`0000`–`9999`), andere Konventionen sind aber genauso möglich.
 
 Verwendung:
 

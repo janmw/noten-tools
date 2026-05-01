@@ -19,13 +19,13 @@ from ..shared.instruments import InstrumentMapper, Identification
 def ask_archivnummer() -> str:
     while True:
         value = questionary.text(
-            "Archivnummer (4-stellig):",
-            validate=lambda v: bool(re.fullmatch(r"\d{4}", v.strip())) or "Bitte exakt 4 Ziffern eingeben.",
+            "Archivnummer:",
+            validate=lambda v: bool(re.fullmatch(r"\d+", v.strip())) or "Bitte nur Ziffern eingeben.",
         ).ask()
         if value is None:
             raise SystemExit("Abbruch.")
         value = value.strip()
-        if re.fullmatch(r"\d{4}", value):
+        if re.fullmatch(r"\d+", value):
             return value
 
 

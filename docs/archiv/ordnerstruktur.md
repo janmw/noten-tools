@@ -41,4 +41,4 @@ Notenarchiv/
 
 ## Stamm-Tabelle
 
-Parallel zur Ordnerstruktur lohnt sich eine separate Liste (Tabelle, Wiki, Datenbank) mit Metadaten, die nicht im Dateinamen stehen: Verlag, Komponist, Schwierigkeitsgrad, letzte Aufführung, Bemerkungen. Die Verbindung zur PDF läuft über die 4-stellige Archivnummer.
+Parallel zur Ordnerstruktur lohnt sich eine separate Liste (Tabelle, Wiki, Datenbank) mit Metadaten, die nicht im Dateinamen stehen: Verlag, Komponist, Schwierigkeitsgrad, letzte Aufführung, Bemerkungen. Die Verbindung zur PDF läuft über die Archivnummer.

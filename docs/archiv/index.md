@@ -8,7 +8,7 @@ Tipps und Konventionen rund um den Aufbau eines digitalen Notenarchivs. Tool-una
 
     ---
 
-    4-stellige Archivnummer pro Notensatz, 2-stelliger Code (00–11) pro Instrumentenfamilie. Was steckt dahinter?
+    Numerische Archivnummer pro Notensatz, 2-stelliger Code (00–11) pro Instrumentenfamilie. Was steckt dahinter?
 
 -   :material-format-letter-case: __[Naming-Konventionen](naming.md)__
 

@@ -11,7 +11,7 @@ noten-stempel [PDF...] [Flags]
 ## Workflow
 
 1. PDF-Auswahl: eine oder mehrere Dateien als Argumente, oder ohne Argumente per `fzf`-Mehrfachauswahl (TAB markieren, ENTER startet).
-2. Archivnummer (4-stellig) wird einmal abgefragt — alle ausgewählten PDFs bekommen die **gleiche** Nummer. Alternativ direkt per `--nr 1234`.
+2. Archivnummer wird einmal abgefragt — alle ausgewählten PDFs bekommen die **gleiche** Nummer. Alternativ direkt per `--nr 1234`.
 3. Pro Datei wird die erste Seite mit Logo (oben links) und `Nr. XXXX` (oben rechts) versehen.
 4. Standardmäßig wird das Original überschrieben. Mit `--backup` wird vorher `<datei>.pdf.bak` daneben angelegt; mit `--out PATH` (nur bei einer einzelnen Datei) bleibt das Original unangetastet.
 
