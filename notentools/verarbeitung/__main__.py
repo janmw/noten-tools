@@ -24,7 +24,15 @@ from ..shared import pdf_io
 from ..shared.stamp import stamp_pdf
 from . import prompts
 from .ocr import HeaderRead, read_header
-from .split import Segment, build_segments, build_filename, build_folder_name, sanitize_filename
+from .split import (
+    Segment,
+    build_segments,
+    build_filename,
+    build_folder_name,
+    dedup_consecutive_same_part,
+    sanitize_filename,
+    try_identify_header,
+)
 
 
 def _parse_offset(value: str) -> tuple[float, float]:
@@ -83,21 +91,26 @@ def identify_pages(
     confidence_threshold: int,
     log,
 ) -> tuple[list[HeaderRead], list[Identification | None]]:
-    """OCR jeder Seite + Identifikation des Instruments. Bei Unsicherheit interaktiv nachfragen."""
+    """OCR jeder Seite + Identifikation des Instruments. Bei Unsicherheit interaktiv nachfragen.
+
+    Ablauf:
+      1. OCR pro Seite -> HeaderRead
+      2. Kandidaten-Identifikation pro Header-Seite (multi-block, ohne Prompts)
+      3. Dedup adjacent same-part: aufeinanderfolgende Header-Seiten mit gleichem
+         Instrument werden zu Folgeseiten zusammengezogen
+      4. Für die übrig gebliebenen "echten" neuen Stimmen ggf. manuell nachfragen
+    """
     log.info(f"Rendere PDF zu Bildern (DPI {config.ocr_dpi}) …")
     images = pdf_io.render_pages_to_images(pdf_path, dpi=config.ocr_dpi)
     log.info(f"Erkannt: {len(images)} Seiten. Starte OCR …")
 
+    # Pass 1: OCR
     headers: list[HeaderRead] = []
-    idents: list[Identification | None] = []
-    last_known: Identification | None = None
-
     for idx, img in enumerate(images):
         band = pdf_io.crop_top_band(img, fraction=0.30)
         hdr = read_header(band, lang=lang)
         hdr.page_index = idx
         headers.append(hdr)
-
         log.debug(
             f"Seite {idx + 1}: title='{hdr.title_text}' (c={hdr.title_conf:.0f}) "
             f"voice='{hdr.voice_text}' (c={hdr.voice_conf:.0f}) "
@@ -105,24 +118,47 @@ def identify_pages(
             f"new_part={hdr.is_new_part_start}"
         )
 
+    # Pass 2: Kandidaten ermitteln (ohne Prompts)
+    candidate_pairs: list[tuple[Identification | None, float]] = []
+    for hdr in headers:
+        if hdr.is_new_part_start:
+            candidate_pairs.append(try_identify_header(mapper, hdr))
+        else:
+            candidate_pairs.append((None, 0.0))
+    candidate_idents = [pair[0] for pair in candidate_pairs]
+    candidate_confs = [pair[1] for pair in candidate_pairs]
+
+    # Pass 3: Dedup
+    is_new_flags = [hdr.is_new_part_start for hdr in headers]
+    accepted = dedup_consecutive_same_part(is_new_flags, candidate_idents)
+
+    # Pass 4: Endgültige Identifikation (mit Prompt für Unsichere)
+    idents: list[Identification | None] = []
+    for idx, (hdr, acc, cand_ident, cand_conf) in enumerate(
+        zip(headers, accepted, candidate_idents, candidate_confs)
+    ):
         if not hdr.is_new_part_start:
             idents.append(None)
             continue
+        if acc is None:
+            # durch Dedup zur Fortsetzung degradiert
+            log.debug(f"Seite {idx + 1}: gleiche Stimme wie Vorgängerseite — Fortsetzung")
+            idents.append(None)
+            continue
 
-        ident = mapper.identify(hdr.voice_text)
         unsure = (
-            ident is None
-            or hdr.voice_conf < confidence_threshold
-            or ident.needs_pitch()
+            cand_ident is None
+            or cand_conf < confidence_threshold
+            or cand_ident.needs_pitch()
         )
         if unsure:
             ident = _resolve_unsure(pdf_path, idx, hdr, mapper, log)
             mapper.learn(hdr.voice_text, ident.filename_part() if ident else "")
             log.info(f"Seite {idx + 1}: manuell zugeordnet -> {ident.filename_part()}")
         else:
+            ident = cand_ident
             log.info(f"Seite {idx + 1}: erkannt -> {ident.filename_part()}")
         idents.append(ident)
-        last_known = ident
 
     return headers, idents
 
@@ -248,7 +284,7 @@ def main(argv: list[str] | None = None) -> int:
         confidence_threshold=config.ocr_confidence,
         log=log,
     )
-    segments = build_segments(headers, idents)
+    segments = build_segments(idents)
     log.info(f"Erkannt: {len(segments)} Stimmen-Segmente.")
 
     write_output(

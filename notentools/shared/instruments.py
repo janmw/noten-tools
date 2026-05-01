@@ -49,6 +49,13 @@ class Identification:
             return True
         return False
 
+    def same_part(self, other: "Identification | None") -> bool:
+        """True wenn beide Identifikationen dieselbe Stimme bezeichnen
+        (Code, Instrumentenname, Nummer)."""
+        if other is None:
+            return False
+        return (self.code, self.instrument, self.nummer) == (other.code, other.instrument, other.nummer)
+
 
 _NUM_WORDS = {
     "1st": "1", "2nd": "2", "3rd": "3", "4th": "4", "5th": "5",
