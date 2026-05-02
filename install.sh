@@ -2,7 +2,8 @@
 # noten-tools — Installation
 #
 # Erkennt die Distribution und installiert:
-#   - System-Pakete: tesseract (+deu/eng), poppler-utils, fzf, xdg-utils, pipx
+#   - System-Pakete: tesseract (+deu/eng), poppler-utils, fzf, xdg-utils,
+#     ghostscript, imagemagick, pipx
 #   - Python-Paket via pipx aus diesem Repo
 
 set -euo pipefail
@@ -35,7 +36,7 @@ install_packages_arch() {
     info "Arch/CachyOS erkannt — installiere via pacman"
     sudo pacman -S --needed --noconfirm \
         tesseract tesseract-data-deu tesseract-data-eng \
-        poppler fzf xdg-utils ghostscript python-pipx
+        poppler fzf xdg-utils ghostscript imagemagick python-pipx
 }
 
 install_packages_debian() {
@@ -43,14 +44,14 @@ install_packages_debian() {
     sudo apt-get update
     sudo apt-get install -y \
         tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng \
-        poppler-utils fzf xdg-utils ghostscript pipx
+        poppler-utils fzf xdg-utils ghostscript imagemagick pipx
 }
 
 install_packages_fedora() {
     info "Fedora erkannt — installiere via dnf"
     sudo dnf install -y \
         tesseract tesseract-langpack-deu tesseract-langpack-eng \
-        poppler-utils fzf xdg-utils ghostscript pipx
+        poppler-utils fzf xdg-utils ghostscript ImageMagick pipx
 }
 
 install_packages_macos() {
@@ -58,7 +59,7 @@ install_packages_macos() {
     if ! command -v brew >/dev/null 2>&1; then
         fail "Homebrew nicht installiert (https://brew.sh)"
     fi
-    brew install tesseract tesseract-lang poppler fzf ghostscript pipx
+    brew install tesseract tesseract-lang poppler fzf ghostscript imagemagick pipx
 }
 
 main() {
@@ -90,6 +91,7 @@ main() {
     echo "  noten-stempel            — Logo + Archivnummer auf erste Seite stempeln"
     echo "  noten-booklet            — A3-Booklet-Scans in A4-Reihenfolge auflösen"
     echo "  noten-ausgabe            — Ausgabe-Stempel '[Name] - [Datum]' unten mittig"
+    echo "  noten-scantailor         — Scan-Tailor-Workflow: PDF → PNGs → (Scan Tailor) → PDF"
     echo "  noten-tools-aliases sync — Gelernte Aliase als Repo-Patch ausgeben"
     echo
     echo "Tipp: Falls die Befehle nicht gefunden werden, neue Shell öffnen oder"

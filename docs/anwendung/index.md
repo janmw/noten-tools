@@ -1,6 +1,6 @@
 # Anwendung
 
-Sechs Befehle, die ineinander greifen. Jeder ist auch einzeln nutzbar — die typische Pipeline ist aber:
+Sieben Befehle, die ineinander greifen. Jeder ist auch einzeln nutzbar — die typische Pipeline ist aber:
 
 ```mermaid
 flowchart LR
@@ -23,6 +23,7 @@ flowchart LR
 | Notensatz in einzelne Stimmen splitten + stempeln | `noten-verarbeitung` | [Notensatz aufbereiten](notensatz.md) |
 | A3-Booklet-Scan in A4 in richtiger Reihenfolge | `noten-booklet` | [Booklets auflösen](booklets.md) |
 | PDF reparieren, entschlüsseln, komprimieren, Auto-Rotate stoppen | `noten-pdf-fix` | [PDFs reparieren](pdf-reparieren.md) |
+| Scan via Scan Tailor Advanced bereinigen (Deskew, Crop, Auto-Picks) | `noten-scantailor` | [Scans säubern](scantailor.md) |
 | Logo + Archivnummer nachträglich auf Stimme | `noten-stempel` | [Stimmen stempeln](stempeln.md) |
 | Ausgabe-Vermerk `[Name] - [Datum]` auf jede Seite | `noten-ausgabe` | [Ausgabe-Vermerk](ausgabe.md) |
 | Gelernte OCR-Aliase verwalten und ins Repo zurückspielen | `noten-tools-aliases` | [OCR-Aliase pflegen](aliase.md) |

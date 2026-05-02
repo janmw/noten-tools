@@ -40,6 +40,7 @@ noten-pdf-fix = "notentools.pdf_fix.__main__:main"
 noten-stempel = "notentools.stempel.__main__:main"
 noten-booklet = "notentools.booklet.__main__:main"
 noten-ausgabe = "notentools.ausgabe.__main__:main"
+noten-scantailor = "notentools.scantailor.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["notentools*"]

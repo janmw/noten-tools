@@ -23,27 +23,27 @@ Falls du dem `install.sh`-Skript nicht traust oder eine nicht erkannte Distribut
 
     ```bash
     sudo pacman -S tesseract tesseract-data-deu tesseract-data-eng \
-                   poppler fzf xdg-utils ghostscript python-pipx
+                   poppler fzf xdg-utils ghostscript imagemagick python-pipx
     ```
 
 === "Ubuntu / Debian"
 
     ```bash
     sudo apt-get install tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng \
-                         poppler-utils fzf xdg-utils ghostscript pipx
+                         poppler-utils fzf xdg-utils ghostscript imagemagick pipx
     ```
 
 === "Fedora"
 
     ```bash
     sudo dnf install tesseract tesseract-langpack-deu tesseract-langpack-eng \
-                     poppler-utils fzf xdg-utils ghostscript pipx
+                     poppler-utils fzf xdg-utils ghostscript ImageMagick pipx
     ```
 
 === "macOS (Homebrew)"
 
     ```bash
-    brew install tesseract tesseract-lang poppler fzf ghostscript pipx
+    brew install tesseract tesseract-lang poppler fzf ghostscript imagemagick pipx
     ```
 
 ### 2. Python-Paket
@@ -59,6 +59,7 @@ pipx install .
 | `tesseract` + `deu`/`eng` | OCR für `noten-verarbeitung` |
 | `poppler-utils` | PDF-Rendering (`pdftoppm`) für OCR-Vorverarbeitung |
 | `ghostscript` | Reparieren, Komprimieren, Auto-Rotate-Stop in `noten-pdf-fix` |
+| `imagemagick` | Bilder zurück zu PDF in `noten-scantailor` |
 | `fzf` | Interaktive Datei-Auswahl, wenn ein Befehl ohne Argumente aufgerufen wird |
 | `xdg-utils` | PDF-Vorschau bei OCR-Unsicherheit (Linux) |
 | `pipx` | Isoliertes Python-Environment für `noten-tools` |
