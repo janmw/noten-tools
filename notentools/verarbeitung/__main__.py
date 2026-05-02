@@ -90,6 +90,7 @@ def identify_pages(
     lang: str,
     confidence_threshold: int,
     log,
+    piece_title: str = "",
 ) -> tuple[list[HeaderRead], list[Identification | None]]:
     """OCR jeder Seite + Identifikation des Instruments. Bei Unsicherheit interaktiv nachfragen.
 
@@ -108,7 +109,7 @@ def identify_pages(
     headers: list[HeaderRead] = []
     for idx, img in enumerate(images):
         band = pdf_io.crop_top_band(img, fraction=0.30)
-        hdr = read_header(band, lang=lang)
+        hdr = read_header(band, lang=lang, piece_title=piece_title)
         hdr.page_index = idx
         headers.append(hdr)
         log.debug(
@@ -116,6 +117,16 @@ def identify_pages(
             f"voice='{hdr.voice_text}' (c={hdr.voice_conf:.0f}) "
             f"composer='{hdr.composer_text}' (c={hdr.composer_conf:.0f}) "
             f"new_part={hdr.is_new_part_start}"
+        )
+
+    # Sicherheitsnetz: wenn piece_title gesetzt war, aber kein einziger Cover
+    # erkannt wurde, ist vermutlich der eingegebene Titel zu weit weg von dem,
+    # was im Scan steht. Warnung loggen — die Reste-Datei wird sonst alles
+    # auffangen, was leicht zu übersehen ist.
+    if piece_title and not any(h.is_new_part_start for h in headers):
+        log.warning(
+            f"Stücktitel '{piece_title}' matcht keine einzige Seite — "
+            "Cover-Erkennung fällt komplett aus. Tippfehler im Titel?"
         )
 
     # Pass 2: Kandidaten ermitteln (ohne Prompts)
@@ -283,6 +294,7 @@ def main(argv: list[str] | None = None) -> int:
         lang=config.ocr_lang,
         confidence_threshold=config.ocr_confidence,
         log=log,
+        piece_title=titel,
     )
     segments = build_segments(idents)
     log.info(f"Erkannt: {len(segments)} Stimmen-Segmente.")

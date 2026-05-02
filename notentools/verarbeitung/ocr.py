@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 
 from PIL import Image, ImageChops
 
@@ -89,6 +91,64 @@ def _aggregate_blocks(rows: list[dict]) -> list[dict]:
     return out
 
 
+def _normalize_for_match(s: str) -> str:
+    """Großschrift, Buchstaben/Ziffern/Whitespace, Whitespace kollabiert."""
+    s = s.upper()
+    s = re.sub(r"[^A-Z0-9\s]", " ", s)
+    return " ".join(s.split())
+
+
+def _signal_tokens(s: str, min_len: int = 4) -> list[str]:
+    """Tokens mit Mindestlänge — kurze Füllwörter wie 'OF'/'THE' fliegen raus."""
+    return [t for t in _normalize_for_match(s).split() if len(t) >= min_len]
+
+
+def title_matches_piece(ocr_title: str, piece_title: str) -> bool:
+    """Token-basiertes Fuzzy-Matching: passt ocr_title plausibel zu piece_title?
+
+    Cover-Seiten haben den Stücktitel groß und mittig — auch wenn das OCR
+    Trümmer macht (verstümmelt, abgeschnitten), bleibt typischerweise genug
+    übrig, um per Token-Überlappung wiedergefunden zu werden.
+
+    Regel: mindestens 50 % der signifikanten Stücktitel-Tokens (>=4 Buchstaben)
+    müssen im OCR-Titel als Substring oder Fuzzy-Match (SequenceMatcher
+    Ratio > 0.7) vorkommen.
+    """
+    piece_tokens = _signal_tokens(piece_title)
+    if not piece_tokens:
+        return False
+    ocr_tokens = _signal_tokens(ocr_title)
+    if not ocr_tokens:
+        return False
+    matches = 0
+    for pt in piece_tokens:
+        for ot in ocr_tokens:
+            if pt in ot or ot in pt:
+                matches += 1
+                break
+            if SequenceMatcher(None, pt, ot).ratio() > 0.7:
+                matches += 1
+                break
+    return matches / len(piece_tokens) >= 0.5
+
+
+def has_arranged_marker(*texts: str) -> bool:
+    """Ein 'Arranged by …'-Marker irgendwo im Header.
+
+    Robuste Cover-Signatur in Druckausgaben — Folgeseiten tragen ihn nicht.
+    Toleriert OCR-Verschmutzung (vor- und nachstehende Zeichen, Groß-/
+    Kleinschreibung). Match nur als Wort-Anfang, damit 'Range' o.ä. nicht
+    triggert.
+    """
+    for text in texts:
+        if not text:
+            continue
+        norm = _normalize_for_match(text)
+        if re.search(r"\bARRANGED\b", norm):
+            return True
+    return False
+
+
 def _filter_color_stamps(image: Image.Image) -> Image.Image:
     """Setzt farbige Pixel auf Weiß. Schützt davor, dass farbige Archivstempel
     (rot, blau, …) als Stimmenbezeichnung gelesen werden — die Stimme selbst
@@ -108,11 +168,25 @@ def _filter_color_stamps(image: Image.Image) -> Image.Image:
     return Image.composite(white, img, mask_color)
 
 
-def read_header(image: Image.Image, lang: str = "deu+eng") -> HeaderRead:
+def read_header(
+    image: Image.Image,
+    lang: str = "deu+eng",
+    piece_title: str = "",
+) -> HeaderRead:
     """Liest den oberen Bereich und extrahiert Titel / Stimme / Komponist anhand der Block-Position.
 
     Erwartetes Layout: Stimme oben links als eigener Textblock,
     Titel oben mittig (groß), Komponist/Arrangeur oben rechts.
+
+    `piece_title` (z.B. 'Rock Classics of the Seventies') aktiviert die
+    primäre Cover-Erkennung: jede Cover-Seite trägt diesen Stücktitel
+    prominent oben mittig, Folgeseiten nicht. Per Token-Fuzzy-Match werden
+    auch verstümmelte Varianten ('CKC ASSICS OF THE SEVENTIES') erkannt.
+    Zusätzlich gilt 'Arranged by …' irgendwo im Header als Cover-Marker —
+    fängt Layouts, in denen alle Header-Inhalte in einen Block kollabieren.
+
+    Ohne `piece_title` greift der konservative Fallback: alle drei Blöcke
+    nicht-leer.
     """
     image = _filter_color_stamps(image)
     img_w, img_h = image.size
@@ -141,7 +215,13 @@ def read_header(image: Image.Image, lang: str = "deu+eng") -> HeaderRead:
     composer_conf = composer["avg_conf"] if composer else 0.0
     title_conf = title["avg_conf"] if title else 0.0
 
-    is_new = bool(voice_text) and bool(composer_text) and bool(title_text)
+    if piece_title:
+        is_new = (
+            title_matches_piece(title_text, piece_title)
+            or has_arranged_marker(title_text, voice_text, composer_text)
+        )
+    else:
+        is_new = bool(voice_text) and bool(composer_text) and bool(title_text)
 
     return HeaderRead(
         page_index=-1,
