@@ -148,7 +148,15 @@ class InstrumentMapper:
                 result.append((code, normalname))
         return result
 
-    def identify(self, raw_text: str) -> Identification | None:
+    def identify(self, raw_text: str, prefer_canonical: bool = False) -> Identification | None:
+        """Erkennt das Instrument aus raw_text.
+
+        prefer_canonical=True deaktiviert keep_original_name, damit z.B. ein
+        Match aus dem Title-Block (der typischerweise den Stücktitel UND den
+        Instrumentnamen enthält) nicht den ganzen Block als Instrumentnamen
+        einsetzt. Nur der Voice-Block sollte keep_original_name nutzen, weil
+        nur dort der reine Instrumentname steht.
+        """
         text = _normalize(raw_text)
         if not text:
             return None
@@ -162,7 +170,8 @@ class InstrumentMapper:
         if instrument_match is None:
             return None
         code, normalname, keep_original = instrument_match
-        instrument_name = self._format_instrument_name(raw_text, normalname, keep_original)
+        keep = keep_original and not prefer_canonical
+        instrument_name = self._format_instrument_name(raw_text, normalname, keep)
         ident = Identification(
             code=code,
             instrument=instrument_name,
@@ -345,13 +354,27 @@ class InstrumentMapper:
         return cleaned if cleaned else normalname
 
     def learn(self, raw_text: str, identifier: str) -> None:
-        """Speichert raw_text -> identifier (z.B. '06 Trompete 1 in B') in learned_aliases.yaml."""
+        """Speichert raw_text -> identifier (z.B. '06 Trompete 1 in B') in learned_aliases.yaml.
+
+        Verwirft offensichtlichen OCR-Müll, damit gelernte Aliase nicht spätere
+        Läufe vergiften: Strings mit Anführungszeichen (meist Stücktitel),
+        weniger als 3 Buchstaben oder unter 40% Buchstabenanteil werden ignoriert.
+        """
+        s = raw_text.strip()
+        if not s:
+            return
+        if any(q in s for q in ('"', "“", "”", "„")):
+            return
+        letters = sum(1 for c in s if c.isalpha())
+        if letters < 3 or letters / len(s) < 0.4:
+            return
+
         path = learned_aliases_file()
         data: dict[str, str] = {}
         if path.exists():
             with path.open("r", encoding="utf-8") as fh:
                 data = yaml.safe_load(fh) or {}
-        data[raw_text.strip()] = identifier
+        data[s] = identifier
         with path.open("w", encoding="utf-8") as fh:
             yaml.safe_dump(data, fh, sort_keys=True, allow_unicode=True)
         self._learned[_normalize(raw_text)] = identifier

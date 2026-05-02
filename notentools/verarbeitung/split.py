@@ -24,17 +24,22 @@ def try_identify_header(
     auf ein bekanntes Instrument resolvet, gewinnt. Damit werden auch Layouts
     erkannt, in denen das Instrument oben mittig (statt links) steht.
 
+    Beim Voice-Block darf keep_original_name greifen (z.B. 'Drum Set' wörtlich
+    übernehmen). Bei Title- und Composer-Block wird stattdessen der kanonische
+    Instrumentname verwendet, damit der mitgeschriebene Stücktitel nicht in
+    den Dateinamen rutscht.
+
     Liefert (Identification | None, source_confidence). source_confidence ist
     die OCR-Confidence des Blocks, aus dem identifiziert wurde.
     """
-    for text, conf in (
-        (hdr.voice_text, hdr.voice_conf),
-        (hdr.title_text, hdr.title_conf),
-        (hdr.composer_text, hdr.composer_conf),
+    for text, conf, prefer_canonical in (
+        (hdr.voice_text, hdr.voice_conf, False),
+        (hdr.title_text, hdr.title_conf, True),
+        (hdr.composer_text, hdr.composer_conf, True),
     ):
         if not text:
             continue
-        ident = mapper.identify(text)
+        ident = mapper.identify(text, prefer_canonical=prefer_canonical)
         if ident is not None:
             return ident, conf
     return None, 0.0
