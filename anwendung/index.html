@@ -565,6 +565,8 @@
       
         
       
+        
+      
     
     
     
@@ -693,6 +695,34 @@
     
   
     PDFs reparieren
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="scantailor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scans säubern
   
 
     
@@ -1254,7 +1284,7 @@
 
 
 <h1 id="anwendung">Anwendung<a class="headerlink" href="#anwendung" title="Permanent link">&para;</a></h1>
-<p>Sechs Befehle, die ineinander greifen. Jeder ist auch einzeln nutzbar — die typische Pipeline ist aber:</p>
+<p>Sieben Befehle, die ineinander greifen. Jeder ist auch einzeln nutzbar — die typische Pipeline ist aber:</p>
 <pre class="mermaid"><code>flowchart LR
     A[Scan] --&gt; B{Probleme&lt;br/&gt;mit der PDF?}
     B -- ja --&gt; C[noten-pdf-fix]
@@ -1290,6 +1320,11 @@
 <td>PDF reparieren, entschlüsseln, komprimieren, Auto-Rotate stoppen</td>
 <td><code>noten-pdf-fix</code></td>
 <td><a href="pdf-reparieren/">PDFs reparieren</a></td>
+</tr>
+<tr>
+<td>Scan via Scan Tailor Advanced bereinigen (Deskew, Crop, Auto-Picks)</td>
+<td><code>noten-scantailor</code></td>
+<td><a href="scantailor/">Scans säubern</a></td>
 </tr>
 <tr>
 <td>Logo + Archivnummer nachträglich auf Stimme</td>
