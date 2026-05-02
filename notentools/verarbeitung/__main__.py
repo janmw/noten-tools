@@ -199,6 +199,23 @@ def _resolve_unsure(
             pass
 
 
+def _unique_in(directory: Path, filename: str, taken: set[Path]) -> Path:
+    """Pfad in `directory` mit `filename`; bei Kollision -2, -3, … anhängen."""
+    candidate = directory / filename
+    if candidate not in taken and not candidate.exists():
+        taken.add(candidate)
+        return candidate
+    stem = candidate.stem
+    suffix = candidate.suffix
+    i = 2
+    while True:
+        candidate = directory / f"{stem}-{i}{suffix}"
+        if candidate not in taken and not candidate.exists():
+            taken.add(candidate)
+            return candidate
+        i += 1
+
+
 def write_output(
     pdf_path: Path,
     out_dir: Path,
@@ -214,8 +231,10 @@ def write_output(
     dry_run: bool,
 ) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
+    duplicate_dir = out_dir / sanitize_filename(f"{archivnummer} - Reste")
 
     def _write_pages(pages: list[int], target: Path) -> None:
+        target.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix="noten-split-") as tmp:
             tmp_dir = Path(tmp)
             extracted = tmp_dir / "extract.pdf"
@@ -234,14 +253,24 @@ def write_output(
             else:
                 shutil.copy2(scaled, target)
 
+    written_names: set[str] = set()
+    duplicate_taken: set[Path] = set()
     rest_pages: list[int] = []
     for seg in segments:
         if seg.identification is None:
             rest_pages.extend(seg.page_indices)
             continue
         filename = build_filename(archivnummer, titel, seg.identification)
-        target = out_dir / filename
-        log.info(f"Stimme: {filename}  (Seiten {[i + 1 for i in seg.page_indices]})")
+        if filename in written_names:
+            target = _unique_in(duplicate_dir, filename, duplicate_taken)
+            log.warning(
+                f"Duplikat: {filename} → {duplicate_dir.name}/{target.name}  "
+                f"(Seiten {[i + 1 for i in seg.page_indices]})"
+            )
+        else:
+            target = out_dir / filename
+            written_names.add(filename)
+            log.info(f"Stimme: {filename}  (Seiten {[i + 1 for i in seg.page_indices]})")
         if dry_run:
             continue
         _write_pages(seg.page_indices, target)
