@@ -9,7 +9,7 @@ import pikepdf
 from pdf2image import convert_from_path
 from PIL import Image
 from pypdf import PdfReader, PdfWriter, Transformation
-from pypdf.generic import RectangleObject
+from pypdf.generic import NameObject, NumberObject, RectangleObject
 
 
 # DIN A4 Hochformat in Punkten (1 pt = 1/72 inch)
@@ -60,6 +60,12 @@ def scale_pdf_to_target(src: Path, dst: Path, a5: bool = False) -> None:
 
     Fit-to-page mit weißen Rändern: Seitenverhältnis wird beibehalten,
     der Inhalt wird zentriert, Restfläche bleibt weiß.
+
+    Wenn die Quellseite ein /Rotate-Attribut hat (Scans aus Multifunktions-
+    geräten kommen oft als landscape-mediabox + /Rotate 90/270), wird die
+    Rotation in die Transformation eingebacken und /Rotate auf 0 gesetzt.
+    Andernfalls würde der gedrehte Inhalt im Portrait-Canvas zwar passen,
+    visuell aber als Querformat erscheinen.
     """
     target_w, target_h = target_size(a5)
     reader = PdfReader(str(src))
@@ -71,15 +77,42 @@ def scale_pdf_to_target(src: Path, dst: Path, a5: bool = False) -> None:
         src_h = float(media.height)
         if src_w <= 0 or src_h <= 0:
             continue
-        scale = min(target_w / src_w, target_h / src_h)
-        scaled_w = src_w * scale
-        scaled_h = src_h * scale
+
+        rotation = int(page.get("/Rotate", 0)) % 360
+        if rotation in (90, 270):
+            visual_w, visual_h = src_h, src_w
+        else:
+            visual_w, visual_h = src_w, src_h
+
+        scale = min(target_w / visual_w, target_h / visual_h)
+        scaled_w = visual_w * scale
+        scaled_h = visual_h * scale
         offset_x = (target_w - scaled_w) / 2
         offset_y = (target_h - scaled_h) / 2
 
-        page.add_transformation(
-            Transformation().scale(scale, scale).translate(offset_x, offset_y)
+        # /Rotate R bedeutet: Seite im Uhrzeigersinn um R° drehen, um sie
+        # aufrecht zu sehen. pypdfs Transformation.rotate(α) dreht hingegen
+        # gegen den Uhrzeigersinn (mathematische Konvention) — daher mit -R
+        # arbeiten und anschließend zurück in den positiven Quadranten
+        # verschieben.
+        if rotation == 0:
+            tx, ty = 0.0, 0.0
+        elif rotation == 90:
+            tx, ty = 0.0, src_w
+        elif rotation == 180:
+            tx, ty = src_w, src_h
+        else:  # 270
+            tx, ty = src_h, 0.0
+
+        transform = (
+            Transformation()
+            .rotate(-rotation)
+            .translate(tx, ty)
+            .scale(scale, scale)
+            .translate(offset_x, offset_y)
         )
+        page.add_transformation(transform)
+        page[NameObject("/Rotate")] = NumberObject(0)
         page.mediabox = RectangleObject((0, 0, target_w, target_h))
         page.cropbox = RectangleObject((0, 0, target_w, target_h))
         writer.add_page(page)
